@@ -1,4 +1,4 @@
-from ec import ECDefaults, EvolutionState, Species
+from ec import ECDefaults, EvolutionState, GPSpecies
 
 from ec.util import *
 
@@ -33,7 +33,7 @@ class Subpopulation:
         species_param = base.push(Subpopulation.P_SPECIES)
 
         self.species = state.parameters.getInstanceForParameter(
-            species_param, def_base.push(Subpopulation.P_SPECIES), Species
+            species_param, def_base.push(Subpopulation.P_SPECIES), GPSpecies
         )
         self.species.setup(state, species_param)
 

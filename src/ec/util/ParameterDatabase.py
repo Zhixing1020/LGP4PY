@@ -30,6 +30,10 @@ class ParameterDatabase:
 
     def getString(self, param:Parameter, default:Parameter=None)->str:
         return str(self.getParamValue(param, default))
+    
+    def getBoolean(self, param:Parameter, default_param:Parameter=None, default_val:bool=False)->bool:
+        val = self.getParamValue(param, default_param)
+        return bool(val) if val is not None else default_val
 
     def getInt(self, param:Parameter, default_param:Parameter=None)->int:
         val = self.getParamValue(param, default_param)
@@ -60,7 +64,7 @@ class ParameterDatabase:
     
 
 if __name__ == "__main__":
-    db = ParameterDatabase('D:\\zhixing\\科研\\LGP4PY\\deap_LGP\\tasks\\Symbreg\\parameters\\simpleLGP_SRMT.params')
+    db = ParameterDatabase('D:\\zhixing\\科研\\LGP4PY\\LGP4PY\\tasks\\Symbreg\\parameters\\simpleLGP_SRMT.params')
     param = Parameter.Parameter("stat").push("child").push("0")
     test = db.getParamValue(str(param))  # returns value
     print(test)

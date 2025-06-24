@@ -66,8 +66,8 @@ class GPBuilder:
             and (tried_terminals := True)
             and len(terminals) != 0):
 
-            n = state.random[thread].choice(terminals).light_clone()
-            n.reset_node(state, thread)
+            n = state.random[thread].choice(terminals).lightClone()
+            n.resetNode(state, thread)
             n.argposition = argposition
             n.parent = parent
             return n
@@ -79,8 +79,8 @@ class GPBuilder:
             if nodes_to_pick is None or len(nodes_to_pick) == 0:
                 nodes_to_pick = func_set.terminals
 
-            n = state.random[thread].choice(nodes_to_pick).light_clone()
-            n.reset_node(state, thread)
+            n = state.random[thread].choice(nodes_to_pick).lightClone()
+            n.resetNode(state, thread)
             n.argposition = argposition
             n.parent = parent
 
@@ -99,7 +99,9 @@ if __name__ == "__main__":
     state = EvolutionState('D:\\zhixing\\科研\\LGP4PY\\LGP4PY\\tasks\\Symbreg\\parameters\\LGP_test.params')
     state.setup("")
     state.primitive_set = GPPrimitiveSet()
-    state.primitive_set.setup(state, Parameter('gp.fs.0'))
+    state.primitive_set.setup(state, Parameter('gp.fs.0'))  # here, I need to use a default parameter name
     # fun_set = {Add(), InputFeatureGPNode()}
     tree = GPTree()
-    tree.child = builder.newRootedTree(state, 0, tree, state.primitive_set, 0)
+    for _ in range(0,10):
+        tree.child = builder.newRootedTree(state, 0, tree, state.primitive_set, 0)
+        print(tree)

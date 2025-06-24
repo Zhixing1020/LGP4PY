@@ -56,7 +56,7 @@ class InputFeatureGPNode(GPNode):
 
     @override
     def lightClone(self):
-        clone = super().light_clone()
+        clone = super().lightClone()
         clone.set_index(self.index)
         clone.set_range(self.range)
         return clone

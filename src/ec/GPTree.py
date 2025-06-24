@@ -43,7 +43,7 @@ class GPTree(GPNodeParent):
         def_param = self.defaultBase()
 
     def __str__(self)->str:
-        self.child.printRootedTreeInString()
+        return self.child.printRootedTreeInString()
 
     def buildTree(self, state:EvolutionState, thread:int):
         self.child = None

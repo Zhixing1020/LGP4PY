@@ -1,5 +1,9 @@
+import sys
+sys.path.append('D:/zhixing/科研/LGP4PY/LGP4PY')
+# sys.path.append('D:/zhixing/科研/LGP4PY/LGP4PY/src')
 
-
+from src.ec import EvolutionState, GPNode, GPNodeParent, GPPrimitiveSet, GPTree
+from src.lgp.individual.primitive import *
 
 class GPBuilder:
 
@@ -48,68 +52,54 @@ class GPBuilder:
         tried_terminals = False
 
         # t = type_.type
-        terminals = func_set.terminals[t]
-        nonterminals = func_set.nonterminals[t]
-        nodes = func_set.nodes[t]
+        terminals = func_set.terminals
+        nonterminals = func_set.nonterminals
+        nodes = func_set.nodes
+
+        if len(nonterminals) == 0:
+            self.output.warning("there is NO nonterminals")
 
         if len(nodes) == 0:
             self.output.error("there is no node for a certain type")
 
-        if ((current + 1 >= max_depth or self.warn_about_nonterminal(len(nonterminals) == 0, type_, False, state))
+        if ((current + 1 >= max_depth or len(nonterminals) == 0)
             and (tried_terminals := True)
             and len(terminals) != 0):
 
-            n = terminals[state.random[thread].randint(0, len(terminals) - 1)].light_clone()
+            n = state.random[thread].choice(terminals).light_clone()
             n.reset_node(state, thread)
             n.argposition = argposition
             n.parent = parent
             return n
         else:
             if tried_terminals:
-                self.warn_about_no_terminal_with_type(type_, False, state)
+                self.output.error("there is NO terminals")
 
-            nodes_to_pick = func_set.nonterminals[t]
-            if not nodes_to_pick:
-                nodes_to_pick = func_set.terminals[t]
+            nodes_to_pick = func_set.nonterminals
+            if nodes_to_pick is None or len(nodes_to_pick) == 0:
+                nodes_to_pick = func_set.terminals
 
-            n = nodes_to_pick[state.random[thread].randint(0, len(nodes_to_pick) - 1)].light_clone()
+            n = state.random[thread].choice(nodes_to_pick).light_clone()
             n.reset_node(state, thread)
             n.argposition = argposition
             n.parent = parent
 
-            childtypes = n.constraints(state.initializer).childtypes
-            n.children = [self.full_node(state, current + 1, max_depth, ct, thread, n, i, func_set) for i, ct in enumerate(childtypes)]
+            n.children = [self.full_node(state, current + 1, max_depth, thread, n, i, func_set) for i, _ in enumerate(n.children)]
+
             return n
+    
+    def newRootedTree(self, state:EvolutionState, thread:int, parent:GPNodeParent, set:GPPrimitiveSet, argposition:int)->GPNode:
+        return self.full_node(state, 0, state.random[thread].randint(0, self.maxDepth-self.minDepth) + self.minDepth,
+                         thread,parent,argposition,set)
+    
 
-    def full_node(self, state:EvolutionState, current:int, max_depth:int, thread:int, 
-    parent:GPNodeParent, argposition:int, func_set:GPPrimitiveSet):
-        tried_terminals = False
-
-        t = type_.type
-        terminals = func_set.terminals[t]
-        nodes = func_set.nodes[t]
-
-        if len(nodes) == 0:
-            self.error_about_no_node_with_type(type_, state)
-
-        if ((current + 1 >= max_depth)
-            and (tried_terminals := True)
-            and len(terminals) != 0):
-
-            n = terminals[state.random[thread].randint(0, len(terminals) - 1)].light_clone()
-            n.reset_node(state, thread)
-            n.argposition = argposition
-            n.parent = parent
-            return n
-        else:
-            if tried_terminals:
-                self.warn_about_no_terminal_with_type(type_, False, state)
-
-            n = nodes[state.random[thread].randint(0, len(nodes) - 1)].light_clone()
-            n.reset_node(state, thread)
-            n.argposition = argposition
-            n.parent = parent
-
-            childtypes = n.constraints(state.initializer).childtypes
-            n.children = [self.grow_node(state, current + 1, max_depth, ct, thread, n, i, func_set) for i, ct in enumerate(childtypes)]
-            return n
+if __name__ == "__main__":
+    from src.ec.util.Parameter import Parameter
+    builder = GPBuilder()
+    state = EvolutionState('D:\\zhixing\\科研\\LGP4PY\\LGP4PY\\tasks\\Symbreg\\parameters\\LGP_test.params')
+    state.setup("")
+    state.primitive_set = GPPrimitiveSet()
+    state.primitive_set.setup(state, Parameter('gp.fs.0'))
+    # fun_set = {Add(), InputFeatureGPNode()}
+    tree = GPTree()
+    tree.child = builder.newRootedTree(state, 0, tree, state.primitive_set, 0)

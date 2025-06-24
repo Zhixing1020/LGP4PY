@@ -1,8 +1,8 @@
 
 
-from ec.util import Parameter
+from src.ec.util.Parameter import Parameter
 
 class GPDefaults:
     @classmethod
-    def base()->Parameter:
+    def base(cls)->Parameter:
         return Parameter("gp")

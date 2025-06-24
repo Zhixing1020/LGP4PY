@@ -1,27 +1,30 @@
-from typing import Set
-from ec import *
+from typing import List
+from src.ec import GPNode, EvolutionState
+from src.ec.util import Parameter
 
-class GPPrimitivesSet:
+from src.lgp.individual.primitive import *
+
+class GPPrimitiveSet:
 
     P_NAME = "name"
     P_FUNC = "func"
     P_SIZE = "size"
     P_NUMREGISTERS = "numregisters"
 
-    def __init__():
-        self.nodes:Set[GPNode] = set()
+    def __init__(self):
+        self.nodes:List[GPNode] = list()
         # self.nodes_by_name:Set[str] = set()
 
-        self.nonterminals:Set[GPNode] = set()
-        self.terminals:Set[GPNode] = set()
+        self.nonterminals:List[GPNode] = list()
+        self.terminals:List[GPNode] = list()
 
-        self.registers:Set[GPNode] = set()
-        self.nonregisters:Set[GPNode] = set()
+        self.registers:List[GPNode] = list()
+        self.nonregisters:List[GPNode] = list()
 
-        self.constants:Set[GPNode] = set()
-        self.nonconstants:Set[GPNode] = set()
+        self.constants:List[GPNode] = list()
+        self.nonconstants:List[GPNode] = list()
 
-        self.flowoperators:Set[GPNode] = set()
+        self.flowoperators:List[GPNode] = list()
         
 
     def setup(self, state:EvolutionState, base:Parameter):
@@ -45,13 +48,13 @@ class GPPrimitivesSet:
 
             # Special handling
             if isinstance(gpfi, InputFeatureGPNode):
-                rng = state.parameters.getInt(pp.push("size"), None, 0)
+                rng = state.parameters.getInt(pp.push("size"), None)
                 gpfi.set_range(rng)
 
             elif isinstance(gpfi, ConstantGPNode):
-                lb = state.parameters.getDouble(pp.push("lowbound"), None, 0.0)
-                ub = state.parameters.getDouble(pp.push("upbound"), None, 1.0)
-                step = state.parameters.getDouble(pp.push("step"), None, 0.1)
+                lb = state.parameters.getDoubleWithDefault(pp.push("lowbound"), None, 0.0)
+                ub = state.parameters.getDoubleWithDefault(pp.push("upbound"), None, 1.0)
+                step = state.parameters.getDoubleWithDefault(pp.push("step"), None, 0.1)
                 if lb > ub:
                     state.output.fatal("the range of constants does not make sense")
                 gpfi = ConstantGPNode(lb, ub, step)
@@ -68,7 +71,7 @@ class GPPrimitivesSet:
                 gpfi.set_min_body_length(mbl2)
             
 
-            self.nodes.add(gpfi)
+            self.nodes.append(gpfi)
             # if str(gpfi) not in self.nodes_by_name:
             #     self.nodes_by_name.add(str(gpfi))
             # else:
@@ -76,18 +79,18 @@ class GPPrimitivesSet:
 
         for node in self.nodes:
             if node.expectedChildren() == 0:
-                self.terminals.add(node)
+                self.terminals.append(node)
                 if isinstance(node, ReadRegisterGPNode):
-                    self.registers.add(node)
+                    self.registers.append(node)
                 else:
-                    self.nonregisters.add(node)
+                    self.nonregisters.append(node)
             else:
-                self.nonterminals.add(node)
+                self.nonterminals.append(node)
 
             if isinstance(node, InputFeatureGPNode) or isinstance(node, ConstantGPNode):
-                self.constants.add(node)
+                self.constants.append(node)
             elif node.expectedChildren() == 0:
-                self.nonconstants.add(node)
+                self.nonconstants.append(node)
 
             if isinstance(node, FlowOperator):
-                self.flowoperators.add(node)
+                self.flowoperators.append(node)

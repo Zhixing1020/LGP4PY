@@ -1,6 +1,6 @@
 
 
-import Parameter
+from src.ec.util import Parameter
 
 class ParameterDatabase:
     def __init__(self, filename):
@@ -20,11 +20,11 @@ class ParameterDatabase:
                 self.params[key] = value
 
     def getParamValue(self, param:Parameter, default:Parameter=None):
-        if self.exists(param):
-            return self.params.get(param)
+        if self.exists(str(param)):
+            return self.params.get(str(param))
         else:
-            if self.exists(default):
-                return self.params.get(param)
+            if self.exists(str(default)):
+                return self.params.get(str(default))
             else:
                 return None
 

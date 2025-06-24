@@ -1,4 +1,4 @@
-from ec import *
+from src.ec import GPTree, GPDefaults, GPIndividual, GPNode
 
 class GPIndividual:
     '''A simple GP individual with only one tree'''

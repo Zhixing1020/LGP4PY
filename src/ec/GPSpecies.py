@@ -1,5 +1,5 @@
-from ec.util import *
-from ec import *
+from src.ec.util import Parameter, ParameterDatabase
+from src.ec import GPIndividual, BreedingPipeline, Fitness, EvolutionState, GPDefaults
 from abc import ABC, abstractmethod
 from typing import Type
 

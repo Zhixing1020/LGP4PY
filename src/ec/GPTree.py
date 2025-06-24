@@ -1,10 +1,11 @@
 from typing import List
 
-from ec.util import Parameter, ParameterDatabase
+from src.ec.util import Parameter, ParameterDatabase
 
-from ec import *
+from src.ec import EvolutionState, GPNode, GPIndividual, GPDefaults, GPTree
+from src.ec.GPNodeParent import GPNodeParent
 
-class GPTree (GPNodeParent):
+class GPTree(GPNodeParent):
 
     P_TREE: str = "tree"
 

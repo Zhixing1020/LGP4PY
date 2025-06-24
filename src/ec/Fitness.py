@@ -1,7 +1,6 @@
-from typing import List
 
-from ec import *
-from ec.util import *
+from src.ec import EvolutionState, GPDefaults
+from src.ec.util import *
 
 class Fitness:
 
@@ -43,7 +42,7 @@ class Fitness:
     def is_ideal_fitness(self):
         return False
 
-    def equivalent_to(self, other:Fitness)->bool:
+    def equivalent_to(self, other)->bool:
         if not isinstance(other, Fitness):
             return False
 

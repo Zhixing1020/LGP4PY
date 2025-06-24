@@ -1,11 +1,21 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import List, Set
 
-from ec.util import Parameter, ParameterDatabase
+from src.ec.util import Parameter, ParameterDatabase
 
-from ec import *
+from src.ec.EvolutionState import EvolutionState 
+from src.ec.GPDefaults import GPDefaults
+# from ec.GPIndividual import GPIndividual
+from src.ec.GPData import GPData
+from src.ec.GPNodeParent import GPNodeParent
 
-class GPNode (GPNodeParent):
+from tasks import Problem
+
+class GPNodeGatherer:
+        def __init__(self):
+            self.node:GPNode = None
+
+class GPNode(GPNodeParent):
 
     '''define the functions and variables in every GP node'''
 
@@ -85,7 +95,7 @@ class GPNode (GPNodeParent):
 
         self.parent = None
 
-    def swapCompatibleWith(self, initializer: GPInitializer, node: GPNode) -> bool:
+    def swapCompatibleWith(self, node) -> bool:
         # Fast check for atomic compatibility
         # if self.constraints(initializer).returntype == node.constraints(initializer).returntype:
         #     return True
@@ -95,8 +105,12 @@ class GPNode (GPNodeParent):
         #     type_ = node.parent.constraints(initializer).childtypes[node.argposition]
         # else:  # GPTree root
         #     type_ = node.parent.constraints(initializer).treetype
+        # if isinstance(node, GPNode):
 
-        return self.expectedChildren() == node.expectedChildren()
+        #     return self.expectedChildren() == node.expectedChildren()
+        # else:
+        #     return False
+        return (self.expectedChildren() == node.expectedChildren()) if isinstance(node, GPNode) else False
 
     # def numNodes_with_gatherer(self, g: 'GPNodeGatherer') -> int:
     #     s = 0
@@ -164,7 +178,7 @@ class GPNode (GPNodeParent):
 
         return p
     
-    def contains(self, subnode: GPNode) -> bool:
+    def contains(self, subnode) -> bool:
         if subnode == self:
             return True
         for child in self.children:
@@ -175,7 +189,7 @@ class GPNode (GPNodeParent):
     def resetNode(self, state: EvolutionState, thread: int):
         pass
 
-    def lightClone(self) -> GPNode:
+    def lightClone(self) -> 'GPNode':
         import copy
         obj = copy.deepcopy(self)
         if len(self.children) == 0:
@@ -185,7 +199,7 @@ class GPNode (GPNodeParent):
         obj.parent = None
         return obj
 
-    def clone(self) -> GPNode:
+    def clone(self) -> 'GPNode':
         newnode = self.lightClone()
         for x in range(len(self.children)):
             newnode.children[x] = self.children[x].clone()
@@ -194,7 +208,7 @@ class GPNode (GPNodeParent):
         return newnode
     
     
-    def cloneReplacing(self, newSubtree: GPNode, oldSubtree: GPNode) -> GPNode:
+    def cloneReplacing(self, newSubtree: 'GPNode', oldSubtree: 'GPNode') -> 'GPNode':
         ''' Deep-clones the tree rooted at this node, and returns the entire
         copied tree.  If the node oldSubtree is located somewhere in this
         tree, then its subtree is replaced with a deep-cloned copy of
@@ -229,7 +243,7 @@ class GPNode (GPNodeParent):
                 newnode.children[x].argposition = x
             return newnode
         
-    def replaceWith(self, newNode: GPNode):
+    def replaceWith(self, newNode: 'GPNode'):
         newNode.parent = self.parent
         newNode.argposition = self.argposition
 
@@ -244,13 +258,13 @@ class GPNode (GPNodeParent):
             newNode.children[x].parent = newNode
             newNode.children[x].argposition = x
 
-    def nodeEquivalentTo(self, node: GPNode) -> bool:
+    def nodeEquivalentTo(self, node: 'GPNode') -> bool:
         return (
             type(self) == type(node) and
             len(self.children) == len(node.children)
         )
 
-    def rootedTreeEquals(self, node: GPNode) -> bool:
+    def rootedTreeEquals(self, node: 'GPNode') -> bool:
         if not self.nodeEquivalentTo(node):
             return False
         for x in range(len(self.children)):
@@ -293,7 +307,7 @@ class GPNode (GPNodeParent):
     
     @abstractmethod
     def eval(self, state: EvolutionState, thread: int, input: GPData,
-             individual: GPIndividual, problem: Problem):
+             individual, problem: Problem):
         pass
 
     def collectReadRegister(self, s: Set[int]):
@@ -302,7 +316,3 @@ class GPNode (GPNodeParent):
 
         for child in self.children:
             child.collectReadRegister(s)
-
-class GPNodeGaterer:
-        def __init__(self):
-            self.node:GPNode = None

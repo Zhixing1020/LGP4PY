@@ -1,6 +1,6 @@
-from ec import ECDefaults, EvolutionState, GPSpecies
+from src.ec import ECDefaults, EvolutionState, GPSpecies
 
-from ec.util import *
+from src.ec.util import Parameter, ParameterDatabase
 
 class Subpopulation:
     P_SUBPOPULATION = "subpop"

@@ -1,5 +1,5 @@
 
-from ec.util import *
+from src.ec.util import ParameterDatabase, Parameter, Output
 
 import random
 
@@ -22,12 +22,13 @@ class EvolutionState:
     P_GENERATIONS: str = "generations"
     P_NODEEVALUATIONS: str = "nodeevaluations"
     P_EVALUATIONS: str = "evaluations"
+    P_BUILDER: str = "gp.tc.0.init"  # only for the initializer in the first tree constraint
 
     def __init__(self, parameterPath:str):
         # ParameterDatabase
-        self.parameters = ParameterDatabase(parameterPath)
+        self.parameters = ParameterDatabase.ParameterDatabase(parameterPath)
 
-        self.output = Output()
+        self.output = Output.Output()
 
         self.random : [random] = [random] * 1
 
@@ -35,10 +36,11 @@ class EvolutionState:
         self.evalthreads:int = 1
 
         self.generation = self.__class__.UNDEFINED
-        self.numGeneration = 200
+        self.numGenerations = 200
         
         self.nodeEvaluation = self.__class__.UNDEFINED
         self.numNodeEva = 1e7
+        self.numEvaluations = self.__class__.UNDEFINED
 
         self.population = None  # will be a Population instance
         self.evaluator = None  # Evaluator instance
@@ -46,9 +48,12 @@ class EvolutionState:
         self.breeder = None  # Breeder instance
         self.statistics = None  # Statistics instance
 
+        self.builder = None
+        self.primitive_set = None
+
     def setup(self, base:str):
 
-        p = Parameter(base)
+        # p = Parameter(base)
 
         # self.data = [{} for _ in self.random]  # per-thread data
 
@@ -98,23 +103,27 @@ class EvolutionState:
 
         # self.quitOnRunComplete = parameters.getBoolean("quit-on-run-complete", False)
 
-        self.initializer = self.parameters.getInstanceForParameter(self.P_INITIALIZER, None, Initializer)
-        self.initializer.setup(self, self.P_INITIALIZER)
+        # self.initializer = self.parameters.getInstanceForParameter(self.P_INITIALIZER, None, Initializer)
+        # self.initializer.setup(self, self.P_INITIALIZER)
 
-        self.finisher = self.parameters.getInstanceForParameter(self.P_FINISHER, None, Finisher)
-        self.finisher.setup(self, self.P_FINISHER)
+        # self.finisher = self.parameters.getInstanceForParameter(self.P_FINISHER, None, Finisher)
+        # self.finisher.setup(self, self.P_FINISHER)
 
-        self.breeder = self.parameters.getInstanceForParameter(self.P_BREEDER, None, Breeder)
-        self.breeder.setup(self, self.P_BREEDER)
+        # self.breeder = self.parameters.getInstanceForParameter(self.P_BREEDER, None, Breeder)
+        # self.breeder.setup(self, self.P_BREEDER)
 
-        self.evaluator = self.parameters.getInstanceForParameter(self.P_EVALUATOR, None, Evaluator)
-        self.evaluator.setup(self, self.P_EVALUATOR)
+        # self.evaluator = self.parameters.getInstanceForParameter(self.P_EVALUATOR, None, Evaluator)
+        # self.evaluator.setup(self, self.P_EVALUATOR)
 
-        self.statistics = self.parameters.getInstanceForParameterEq(self.P_STATISTICS, None, Statistics)
-        self.statistics.setup(self, self.P_STATISTICS)
+        # self.statistics = self.parameters.getInstanceForParameterEq(self.P_STATISTICS, None, Statistics)
+        # self.statistics.setup(self, self.P_STATISTICS)
 
-        self.exchanger = self.parameters.getInstanceForParameter(self.P_EXCHANGER, None, Exchanger)
-        self.exchanger.setup(self, self.P_EXCHANGER)
+        # self.exchanger = self.parameters.getInstanceForParameter(self.P_EXCHANGER, None, Exchanger)
+        # self.exchanger.setup(self, self.P_EXCHANGER)
+
+        # if self.parameters.exists(self.P_BUILDER):
+        #     self.builder = self.parameters.getInstanceForParameter(self.P_BUILDER, None, GPBuilder)
+        #     self.builder.setup(self, self.P_BUILDER)
 
         self.generation = 0
 

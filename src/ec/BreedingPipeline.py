@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from ec.util import Parameter
+from src.ec.util import Parameter
+from src.ec import Population, EvolutionState, GPIndividual
 
-class BreedingPipeline(ABC, BreedingSource, SteadyStateBSourceForm):
+class BreedingPipeline(ABC):
     '''
      A BreedingPipeline is a BreedingSource which provides "fresh" individuals which
     can be used to fill a new population.  BreedingPipelines might include
@@ -35,7 +36,7 @@ class BreedingPipeline(ABC, BreedingSource, SteadyStateBSourceForm):
     def __init__(self):
         self.mybase = None
         self.likelihood = 1.0
-        self.sources: List[BreedingSource] = []
+        # self.sources: List[BreedingSource] = []
 
     @abstractmethod
     def numSources(self):
@@ -84,13 +85,13 @@ class BreedingPipeline(ABC, BreedingSource, SteadyStateBSourceForm):
             p = base.push(self.P_SOURCE).push(str(x))
             d = def_.push(self.P_SOURCE).push(str(x))
             s = state.parameters.getString(p, d)
-            if s is not None and s == self.V_SAME:
-                if x == 0:
-                    state.output.fatal("Source #0 cannot be declared with \"same\".", p, d)
-                self.sources[x] = self.sources[x - 1]
-            else:
-                self.sources[x] = state.parameters.getInstanceForParameter(p, d, BreedingSource)
-                self.sources[x].setup(state, p)
+            # if s is not None and s == self.V_SAME:
+            #     if x == 0:
+            #         state.output.fatal("Source #0 cannot be declared with \"same\".", p, d)
+            #     self.sources[x] = self.sources[x - 1]
+            # else:
+            #     self.sources[x] = state.parameters.getInstanceForParameter(p, d, BreedingSource)
+            #     self.sources[x].setup(state, p)
 
         state.output.exitIfErrors()
 
@@ -109,22 +110,22 @@ class BreedingPipeline(ABC, BreedingSource, SteadyStateBSourceForm):
                   n:int, 
                   start:int, 
                   subpopulation:int, 
-                  inds:List[Individual], 
+                  inds:List[GPIndividual], 
                   state:EvolutionState, 
                   thread:int, 
                   produceChildrenFromSource:bool)->int:
         if produceChildrenFromSource:
             self.sources[0].produce(n, n, start, subpopulation, inds, state, thread)
-        if isinstance(self.sources[0], SelectionMethod):
-            for q in range(start, n + start):
-                inds[q] = inds[q].clone()
+        # if isinstance(self.sources[0], SelectionMethod):
+        #     for q in range(start, n + start):
+        #         inds[q] = inds[q].clone()
         return n
 
     def produces(self, 
                  state:EvolutionState, 
                  newpop:Population, 
                  subpopulation:int, 
-                 thread:int) -> boolean:
+                 thread:int) -> bool:
         for x in range(len(self.sources)):
             if x == 0 or self.sources[x] != self.sources[x - 1]:
                 if not self.sources[x].produces(state, newpop, subpopulation, thread):
@@ -152,23 +153,25 @@ class BreedingPipeline(ABC, BreedingSource, SteadyStateBSourceForm):
             source.preparePipeline(hook)
 
     def individualReplaced(self, 
-                           state:SteadyStateEvolutionState, 
+                           state:EvolutionState, 
                            subpopulation:int, 
                            thread:int, 
                            individual:int):
         for source in self.sources:
-            if isinstance(source, SteadyStateBSourceForm):
-                source.individualReplaced(state, subpopulation, thread, individual)
+            # if isinstance(source, SteadyStateBSourceForm):
+            #     source.individualReplaced(state, subpopulation, thread, individual)
+            pass
 
     def sourcesAreProperForm(self, 
-                             state:SteadyStateEvolutionState):
+                             state:EvolutionState):
         for x, source in enumerate(self.sources):
-            if not isinstance(source, SteadyStateBSourceForm):
-                state.output.error("Source is not SteadyStateBSourceForm",
-                                   self.mybase.push(self.P_SOURCE).push(str(x)),
-                                   self.defaultBase().push(self.P_SOURCE).push(str(x)))
-            else:
-                source.sourcesAreProperForm(state)
+            # if not isinstance(source, SteadyStateBSourceForm):
+            #     state.output.error("Source is not SteadyStateBSourceForm",
+            #                        self.mybase.push(self.P_SOURCE).push(str(x)),
+            #                        self.defaultBase().push(self.P_SOURCE).push(str(x)))
+            # else:
+            #     source.sourcesAreProperForm(state)
+            pass
 
     def defaultBase(self)->Parameter:
         # Placeholder: override as needed

@@ -1,6 +1,6 @@
 
 
-from src.ec.util.Parameter import Parameter
+from src.ec.util.parameter import Parameter
 
 class GPDefaults:
     @classmethod

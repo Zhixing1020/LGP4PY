@@ -1,6 +1,8 @@
 
-from src.ec import EvolutionState, GPDefaults
+from src.ec.evolution_state import EvolutionState
+from src.ec.gp_defaults import GPDefaults
 from src.ec.util import *
+from copy import __deepcopy__
 
 class Fitness:
 
@@ -16,6 +18,9 @@ class Fitness:
         new_fitness.value = self.value
         new_fitness.maximize = self.maximize
         return new_fitness
+    
+    def __deepcopy__(self):
+        self.clone()
 
     def setup(self, state:EvolutionState, base:Parameter):
         

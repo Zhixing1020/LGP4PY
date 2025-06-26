@@ -1,4 +1,4 @@
-from src.ec.util import Parameter
+from src.ec.util.parameter import Parameter
 
 class ECDefaults:
     @classmethod

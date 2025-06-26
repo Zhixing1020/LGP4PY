@@ -2,7 +2,12 @@ import sys
 sys.path.append('D:/zhixing/科研/LGP4PY/LGP4PY')
 # sys.path.append('D:/zhixing/科研/LGP4PY/LGP4PY/src')
 
-from src.ec import EvolutionState, GPNode, GPNodeParent, GPPrimitiveSet, GPTree
+from src.ec.evolution_state import EvolutionState
+from src.ec.gp_node import GPNode
+from src.ec.gp_node_parent import GPNodeParent
+from src.ec.gp_primitive_set import GPPrimitiveSet
+from src.ec.gp_tree import GPTree
+from src.ec.util.parameter import Parameter
 from src.lgp.individual.primitive import *
 
 class GPBuilder:
@@ -10,11 +15,16 @@ class GPBuilder:
     P_MAXDEPTH = "max-depth"
     P_MINDEPTH = "min-depth"
     P_PROBCON = "prob_constant"
+    P_BUILDER = "builder"
 
     def __init__(self):
         self.maxDepth:int = 3
         self.minDepth:int = 1
         self.probCons = 0.5
+
+    @classmethod
+    def default_base(cls)->Parameter:
+        return Parameter(cls.P_BUILDER)
 
     def setup(self, state, base):
         # super().setup(state, base)
@@ -94,7 +104,7 @@ class GPBuilder:
     
 
 if __name__ == "__main__":
-    from src.ec.util.Parameter import Parameter
+    from src.ec.util.parameter import Parameter
     builder = GPBuilder()
     state = EvolutionState('D:\\zhixing\\科研\\LGP4PY\\LGP4PY\\tasks\\Symbreg\\parameters\\LGP_test.params')
     state.setup("")

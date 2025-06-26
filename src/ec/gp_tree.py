@@ -1,9 +1,13 @@
 from typing import List
 
-from src.ec.util import Parameter, ParameterDatabase
+from src.ec.util.parameter import Parameter
+from src.ec.util.parameter_database import ParameterDatabase
 
-from src.ec import EvolutionState, GPNode, GPIndividual, GPDefaults, GPTree
-from src.ec.GPNodeParent import GPNodeParent
+from src.ec.evolution_state import EvolutionState
+from src.ec.gp_node import GPNode
+# from src.ec.gp_individual import GPIndividual
+from src.ec.gp_defaults import GPDefaults
+from src.ec.gp_node_parent import GPNodeParent
 
 class GPTree(GPNodeParent):
 
@@ -11,16 +15,19 @@ class GPTree(GPNodeParent):
 
     def __init__(self):
         self.child:GPNode = None
-        self.owner:GPIndividual = None
+        self.owner = None
     
     @classmethod
     def defaultBase(cls) -> Parameter:
         return GPDefaults.base().push(cls.P_TREE)
     
-    def treeEquals(self, tree: GPTree):
+    def __eq__(self, other):
+        return self.treeEquals(other)
+
+    def treeEquals(self, tree:'GPTree')->bool:
         return self.child.rootedTreeEquals(tree.child)
     
-    def lightClone(self) -> GPTree:
+    def lightClone(self) -> 'GPTree':
         # Like shallow copy: just replicate the GPTree object and share child
         newtree = GPTree()
         # newtree.constraints = self.constraints
@@ -30,7 +37,7 @@ class GPTree(GPNodeParent):
         # newtree.parent = self.parent
         return newtree
 
-    def clone(self) -> GPTree:
+    def clone(self) -> 'GPTree':
         newtree = self.lightClone()
         if self.child is not None:
             newtree.child = self.child.clone()  # assumes GPNode.clone() exists
@@ -46,4 +53,4 @@ class GPTree(GPNodeParent):
         return self.child.printRootedTreeInString()
 
     def buildTree(self, state:EvolutionState, thread:int):
-        self.child = None
+        self.child = state.builder.newRootedTree(state, 0, self, state.primitive_set, 0)

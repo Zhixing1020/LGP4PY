@@ -1,6 +1,7 @@
 from typing import List
-from src.ec import GPNode, EvolutionState
-from src.ec.util import Parameter
+from src.ec.gp_node import GPNode
+from src.ec.evolution_state import EvolutionState
+from src.ec.util.parameter import Parameter
 
 from src.lgp.individual.primitive import *
 
@@ -49,7 +50,7 @@ class GPPrimitiveSet:
             # Special handling
             if isinstance(gpfi, InputFeatureGPNode):
                 rng = state.parameters.getInt(pp.push("size"), None)
-                gpfi.set_range(rng)
+                gpfi.setRange(rng)
 
             elif isinstance(gpfi, ConstantGPNode):
                 lb = state.parameters.getDoubleWithDefault(pp.push("lowbound"), None, 0.0)

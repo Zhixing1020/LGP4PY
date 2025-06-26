@@ -1,4 +1,6 @@
-from src.ec import ECDefaults, EvolutionState, GPSpecies
+from src.ec.evolution_state import EvolutionState
+from src.ec.gp_species import GPSpecies
+from src.ec.ec_defaults import ECDefaults
 
 from src.ec.util import Parameter, ParameterDatabase
 

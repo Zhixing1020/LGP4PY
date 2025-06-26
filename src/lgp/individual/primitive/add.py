@@ -2,7 +2,8 @@ from src.ec import *
 from tasks import Problem
 from typing import override
 
-from src.ec.GPNode import GPNode
+# from src.ec.gp_node import GPNode
+# from src.ec.gp_data import GPData
 
 class Add(GPNode):
     

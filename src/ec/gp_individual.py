@@ -1,4 +1,8 @@
-from src.ec import GPTree, GPDefaults, GPIndividual, GPNode
+from src.ec.gp_tree import GPTree
+from src.ec.gp_defaults import GPDefaults
+# from src.ec.gp_individual import GPIndividual
+from src.ec.gp_node import GPNode
+from copy import __deepcopy__
 
 class GPIndividual:
     '''A simple GP individual with only one tree'''
@@ -13,10 +17,14 @@ class GPIndividual:
         self.fitness = None
         self.species = None
 
-    def default_base(self):
-        return GPDefaults.base().push(self.P_INDIVIDUAL)
+    @classmethod
+    def default_base(cls):
+        return GPDefaults.base().push(cls.P_INDIVIDUAL)
 
-    def equals(self, ind:GPIndividual):
+    def __eq__(self, other):
+        return self.equals(other)
+        
+    def equals(self, ind:'GPIndividual'):
         if ind is None:
             return False
         if not isinstance(ind, GPIndividual):
@@ -78,7 +86,7 @@ class GPIndividual:
         myobj.evaluated = self.evaluated
         return myobj
 
-    def light_clone(self):
+    def lightClone(self):
         myobj = self.__class__()
         myobj.fitness = self.fitness.clone() if self.fitness is not None else None
         myobj.treelist = [tree.lightClone() for tree in self.treelist]
@@ -86,6 +94,9 @@ class GPIndividual:
             tree.owner = myobj
         myobj.evaluated = self.evaluated
         return myobj
+    
+    def __deepcopy__(self):
+        self.clone()
 
     def size(self):
         return sum(tree.child.num_nodes(GPNode.NODESEARCH_ALL) for tree in self.treelist)

@@ -1,6 +1,6 @@
 
 
-from src.ec.util import Parameter
+from src.ec.util.parameter import Parameter
 
 class ParameterDatabase:
     def __init__(self, filename):

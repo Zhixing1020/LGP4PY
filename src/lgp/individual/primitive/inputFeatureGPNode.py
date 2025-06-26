@@ -2,7 +2,7 @@ from src.ec import *
 from tasks import Problem
 from typing import override
 
-from src.ec.GPNode import GPNode
+# from src.ec.gp_node import GPNode
 
 class InputFeatureGPNode(GPNode):
     
@@ -14,16 +14,16 @@ class InputFeatureGPNode(GPNode):
         if index >= range or index < 0:
             raise SystemExit("Fatal error: illegal index of InputFeatureGPNode\n")
 
-    def get_index(self):
+    def getIndex(self):
         return self.index
 
-    def get_range(self):
+    def getRange(self):
         return self.range
 
-    def set_index(self, ind):
+    def setIndex(self, ind):
         self.index = ind
 
-    def set_range(self, size):
+    def setRange(self, size):
         self.range = size
 
     def __str__(self):
@@ -37,7 +37,7 @@ class InputFeatureGPNode(GPNode):
     def eval(self, state: EvolutionState, thread: int, input: GPData,
              individual, problem: Problem):
         if hasattr(problem, 'datadim') and self.range != problem.datadim and state is not None:
-            self.set_range(problem.datadim)
+            self.setRange(problem.datadim)
             self.index = state.random[thread].randint(0, self.range - 1)
 
         if self.index < len(problem.X):
@@ -46,9 +46,9 @@ class InputFeatureGPNode(GPNode):
             print("The input index exceeds the data dimension")
             exit(1)
 
-    @override
-    def nodeEquivalentTo(self, other: GPNode) -> bool:
-        return isinstance(other, InputFeatureGPNode) and self.index == other.index
+    def __eq__(self, other):
+        res = super().__eq__(other)
+        return res and self.index == other.getIndex()
     
     @override
     def resetNode(self, state:EvolutionState, thread:int):
@@ -57,6 +57,6 @@ class InputFeatureGPNode(GPNode):
     @override
     def lightClone(self):
         clone = super().lightClone()
-        clone.set_index(self.index)
-        clone.set_range(self.range)
+        clone.setIndex(self.index)
+        clone.setRange(self.range)
         return clone

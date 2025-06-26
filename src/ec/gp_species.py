@@ -1,12 +1,19 @@
-from src.ec.util import Parameter, ParameterDatabase
-from src.ec import GPIndividual, BreedingPipeline, Fitness, EvolutionState, GPDefaults
-from abc import ABC, abstractmethod
+from src.ec.util.parameter import Parameter
+from src.ec.util.parameter_database import ParameterDatabase
+from src.ec.gp_individual import GPIndividual
+from src.ec.fitness import Fitness
+from src.ec.evolution_state import EvolutionState
+from src.ec.gp_defaults import GPDefaults
+from src.ec.breeding_pipeline import BreedingPipeline
+from abc import ABC
 from typing import Type
+from copy import __deepcopy__
 
 class GPSpecies(ABC):
     P_INDIVIDUAL: str = "ind"
     P_PIPE: str = "pipe"
     P_FITNESS: str = "fitness"
+    P_GPSPECIES: str = "species"
 
     def __init__(self):
         self.i_prototype: GPIndividual = None
@@ -19,6 +26,9 @@ class GPSpecies(ABC):
         new_species.f_prototype = self.f_prototype.clone()
         new_species.pipe_prototype = self.pipe_prototype.clone()
         return new_species
+    
+    def __deepcopy__(self):
+        self.clone()
 
     def new_individual(self, state: EvolutionState, thread: int) -> GPIndividual:
         newind = self.i_prototype.clone()
@@ -33,7 +43,7 @@ class GPSpecies(ABC):
         return newind
 
     def setup(self, state: EvolutionState, base: Parameter):
-        default = self.default_base()
+        default = GPSpecies.default_base()
 
         self.pipe_prototype = state.parameters.get_instance_for_parameter(
             base.push(self.P_PIPE), default.push(self.P_PIPE), BreedingPipeline)
@@ -52,6 +62,6 @@ class GPSpecies(ABC):
             base.push(self.P_FITNESS), default.push(self.P_FITNESS), Fitness)
         self.f_prototype.setup(state, base.push(self.P_FITNESS))
 
-    @abstractmethod
-    def default_base(self) -> Parameter:
-        return GPDefaults.base().push(self.P_GPSPECIES)
+    @classmethod
+    def default_base(cls) -> Parameter:
+        return GPDefaults.base().push(cls.P_GPSPECIES)

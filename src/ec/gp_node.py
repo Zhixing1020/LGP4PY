@@ -1,13 +1,13 @@
 from abc import abstractmethod
 from typing import List, Set
 
-from src.ec.util import Parameter, ParameterDatabase
+from src.ec.util.parameter import Parameter
+from src.ec.util.parameter_database import ParameterDatabase
 
-from src.ec.EvolutionState import EvolutionState 
-from src.ec.GPDefaults import GPDefaults
-# from ec.GPIndividual import GPIndividual
-from src.ec.GPData import GPData
-from src.ec.GPNodeParent import GPNodeParent
+from src.ec.evolution_state import EvolutionState 
+from src.ec.gp_defaults import GPDefaults
+from src.ec.gp_data import GPData
+from src.ec.gp_node_parent import GPNodeParent
 
 from tasks import Problem
 
@@ -196,7 +196,8 @@ class GPNode(GPNodeParent):
             obj.children = self.children  # share array (assumed to be reused zeroChildren)
         else:
             obj.children = [GPNode] * len(self.children)
-        obj.parent = None
+        obj.parent = None # the parent and argposition are set to None (or initial values) to imply a new node
+        obj.argposition = -1
         return obj
 
     def clone(self) -> 'GPNode':
@@ -206,7 +207,6 @@ class GPNode(GPNodeParent):
             newnode.children[x].parent = newnode
             newnode.children[x].argposition = x
         return newnode
-    
     
     def cloneReplacing(self, newSubtree: 'GPNode', oldSubtree: 'GPNode') -> 'GPNode':
         ''' Deep-clones the tree rooted at this node, and returns the entire
@@ -258,14 +258,14 @@ class GPNode(GPNodeParent):
             newNode.children[x].parent = newNode
             newNode.children[x].argposition = x
 
-    def nodeEquivalentTo(self, node: 'GPNode') -> bool:
+    def __eq__(self, node):
         return (
             type(self) == type(node) and
             len(self.children) == len(node.children)
         )
 
     def rootedTreeEquals(self, node: 'GPNode') -> bool:
-        if not self.nodeEquivalentTo(node):
+        if not self == node:
             return False
         for x in range(len(self.children)):
             if not self.children[x].rootedTreeEquals(node.children[x]):

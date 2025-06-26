@@ -1,5 +1,7 @@
 
-from src.ec.util import ParameterDatabase, Parameter, Output
+from src.ec.util.parameter_database import ParameterDatabase
+from src.ec.util.parameter import Parameter
+from src.ec.util.output import Output
 
 import random
 
@@ -26,9 +28,9 @@ class EvolutionState:
 
     def __init__(self, parameterPath:str):
         # ParameterDatabase
-        self.parameters = ParameterDatabase.ParameterDatabase(parameterPath)
+        self.parameters = ParameterDatabase(parameterPath)
 
-        self.output = Output.Output()
+        self.output = Output()
 
         self.random : [random] = [random] * 1
 

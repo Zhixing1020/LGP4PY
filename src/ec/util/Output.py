@@ -10,5 +10,5 @@ class Output:
     def fatal(self, message: str, *args):
         raise SystemExit(f"Fatal error: {message}")
     
-    def message(self, mes: str):
+    def message(self, message: str):
         print(f"{message}")

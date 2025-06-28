@@ -98,8 +98,9 @@ class BreedingPipeline(ABC):
         state.output.exitIfErrors()
 
     def clone(self):
-        import copy
-        c = copy.copy(self)
+        # import copy
+        # c = copy.copy(self)
+        c = self.__class__()
         c.sources = [None] * len( self.sources )
         for x in range(len(self.sources)):
             if x == 0 or self.sources[x] != self.sources[x - 1]:

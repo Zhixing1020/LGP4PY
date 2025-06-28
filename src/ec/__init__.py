@@ -8,9 +8,11 @@ from .gp_primitive_set import GPPrimitiveSet
 from .gp_tree import GPTree
 from .gp_builder import GPBuilder
 from .gp_individual import GPIndividual
-from .gp_species import GPSpecies
 from .population import Population
 from .subpopulation import Subpopulation
+from .breeder import Breeder
+from .gp_species import GPSpecies
+
 
 __author__ = "Zhixing Huang"
 __all__ = [
@@ -23,6 +25,7 @@ __all__ = [
     "GPNode",
     "GPNodeParent",
     "GPPrimitiveSet",
+    "Breeder",
     "GPSpecies",
     "GPTree",
     "Population",

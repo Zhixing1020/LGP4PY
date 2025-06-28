@@ -42,8 +42,8 @@ breed.elite.0 = 5
 # ==============================
 
 # GP population parameters
-pop.subpop.0.species = zhixing.cpxInd.species.CpxGPSpecies
-pop.subpop.0.species.ind = zhixing.symbreg_multitarget.individual.LGPIndividual4SRMT
+pop.subpop.0.species = src.ec.GPSpecies
+pop.subpop.0.species.ind = src.ec.GPIndividual
 pop.subpop.0.species.ind.maxnumtrees = 100
 pop.subpop.0.species.ind.minnumtrees = 1
 pop.subpop.0.species.ind.init_maxnumtrees = 20
@@ -53,7 +53,8 @@ pop.subpop.0.species.ind.rate_flowoperator = 0.2
 pop.subpop.0.species.ind.max_itertimes = 100
 pop.subpop.0.species.ind.effective_initial = true
 #SimpleGPTree
-pop.subpop.0.species.ind.tree.0 = zhixing.cpxInd.individual.GPTreeStruct
+#pop.subpop.0.species.ind.tree.0 = zhixing.cpxInd.individual.GPTreeStruct
+pop.subpop.0.species.ind.tree.0 = src.ec.GPTree
 pop.subpop.0.species.ind.tree.0.tc = tc0
 pop.subpop.0.species.ind.num-output-register = 1
 pop.subpop.0.species.ind.output-register.0 = 0
@@ -73,16 +74,16 @@ pop.subpop.0.species.ind.to-wrap = true
 
 #pop.subpop.0.species.fitness = ec.gp.koza.KozaFitness
 #pop.subpop.0.duplicate-retries = 100
-pop.subpop.0.species.fitness = ec.multiobjective.MultiObjectiveFitness
+pop.subpop.0.species.fitness = src.ec.Fitness
 pop.subpop.0.species.fitness.num-objectives = 1
-pop.subpop.0.species.fitness.maximize = false
+pop.subpop.0.species.fitness.maximize = False
 pop.subpop.0.duplicate-retries = 100
 
 # GP initializer
 init = ec.gp.GPInitializer
 
 # GP breeding pipeline
-pop.subpop.0.species.pipe = ec.breed.MultiBreedingPipeline
+pop.subpop.0.species.pipe = src.ec.Breeder
 pop.subpop.0.species.pipe.generate-max = false
 pop.subpop.0.species.pipe.num-sources = 5
 pop.subpop.0.species.pipe.source.0 = zhixing.cpxInd.individual.reproduce.LGPMicroMutationPipeline
@@ -258,27 +259,24 @@ gp.adf-stack.context = ec.gp.ADFContext
 # GP function set parameters
 gp.fs.size = 1
 gp.fs.0.name = f0
-gp.fs.0.size = 2
+gp.fs.0.size = 7
 gp.fs.0.func.0 = src.lgp.individual.primitive.InputFeatureGPNode
 gp.fs.0.func.0.size = 1
 gp.fs.0.func.0.nc = nc0
-gp.fs.0.func.11 = zhixing.symbreg_multitarget.individual.primitive.AverageGPNode
-gp.fs.0.func.11.size = 1
-gp.fs.0.func.11.nc = nc0
 
 gp.fs.0.func.1 = src.lgp.individual.primitive.Add
 gp.fs.0.func.1.nc = nc2
-gp.fs.0.func.2 = zhixing.symbolicregression.individual.primitive.Sub
+gp.fs.0.func.2 = src.lgp.individual.primitive.Sub
 gp.fs.0.func.2.nc = nc2
-gp.fs.0.func.3 = zhixing.symbolicregression.individual.primitive.Mul
+gp.fs.0.func.3 = src.lgp.individual.primitive.Mul
 gp.fs.0.func.3.nc = nc2
-gp.fs.0.func.4 = zhixing.symbolicregression.individual.primitive.Div
+gp.fs.0.func.4 = src.lgp.individual.primitive.Div
 gp.fs.0.func.4.nc = nc2
-gp.fs.0.func.5 = zhixing.cpxInd.individual.primitive.WriteRegisterGPNode
+gp.fs.0.func.5 = src.lgp.individual.primitive.WriteRegisterGPNode
 gp.fs.0.func.5.numregisters = 8
 gp.fs.0.func.5.nc = nc1
 #two ways to add ReadRegister 1:in JSS, add them into terminal set (JSS specific). 2: add them as functions.
-gp.fs.0.func.6 = zhixing.cpxInd.individual.primitive.ReadRegisterGPNode
+gp.fs.0.func.6 = src.lgp.individual.primitive.ReadRegisterGPNode
 gp.fs.0.func.6.numregisters = 8
 gp.fs.0.func.6.nc = nc0
 

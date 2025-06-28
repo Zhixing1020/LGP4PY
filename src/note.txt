@@ -23,9 +23,9 @@ no hash code
 
 
 ********  test  ********
-1. randomly produce individuals
+1. randomly produce individuals （ok）
 2. clone a tree and vary it. check the new and original one
-3. check the toString() methods of GPNode and GPTree
+3. check the toString() methods of GPNode and GPTree (ok)
 4. number of nodes and collect a node based on specific types
 5. node equivalent and tree equivalent
 

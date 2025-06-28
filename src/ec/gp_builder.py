@@ -1,6 +1,5 @@
-import sys
-sys.path.append('D:/zhixing/科研/LGP4PY/LGP4PY')
-# sys.path.append('D:/zhixing/科研/LGP4PY/LGP4PY/src')
+# import sys
+# sys.path.append('D:/zhixing/科研/LGP4PY/LGP4PY')
 
 from src.ec.evolution_state import EvolutionState
 from src.ec.gp_node import GPNode
@@ -41,7 +40,7 @@ class GPBuilder:
         if self.maxDepth < self.minDepth:
             state.output.fatal("Max Depth must be >= Min Depth for a KozaBuilder")
 
-        self.probCons = state.parameters.getDoubleWithDefault(base.push(self.P_PROBCON), def_base.push(self.P_PROBCON))
+        self.probCons = state.parameters.getDoubleWithDefault(base.push(self.P_PROBCON), def_base.push(self.P_PROBCON), 0.5)
         if self.probCons < 0:
             state.output.fatal("The constant probability for a KozaBuilder must be >= 0.0")
 
@@ -104,10 +103,13 @@ class GPBuilder:
     
 
 if __name__ == "__main__":
+    
     from src.ec.util.parameter import Parameter
     builder = GPBuilder()
+    
     state = EvolutionState('D:\\zhixing\\科研\\LGP4PY\\LGP4PY\\tasks\\Symbreg\\parameters\\LGP_test.params')
     state.setup("")
+    builder.setup(state, Parameter("gp.koza.half"))
     state.primitive_set = GPPrimitiveSet()
     state.primitive_set.setup(state, Parameter('gp.fs.0'))  # here, I need to use a default parameter name
     # fun_set = {Add(), InputFeatureGPNode()}

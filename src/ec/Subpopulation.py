@@ -1,7 +1,8 @@
 from src.ec.evolution_state import EvolutionState
+from src.ec.gp_individual import GPIndividual
 from src.ec.gp_species import GPSpecies
 from src.ec.ec_defaults import ECDefaults
-
+from typing import Set
 from src.ec.util import Parameter, ParameterDatabase
 
 class Subpopulation:
@@ -14,6 +15,7 @@ class Subpopulation:
         self.individuals = []
         self.numDuplicateRetries = 0
         self.species = None
+        self.duplicateSet = None
 
     def defaultBase(self):
         return ECDefaults.base().push(Subpopulation.P_SUBPOPULATION)
@@ -33,17 +35,18 @@ class Subpopulation:
         def_base = self.defaultBase()
         size_param = base.push(Subpopulation.P_SUBPOPSIZE)
         species_param = base.push(Subpopulation.P_SPECIES)
+        retries_param = base.push(Subpopulation.P_RETRIES)
 
         self.species = state.parameters.getInstanceForParameter(
             species_param, def_base.push(Subpopulation.P_SPECIES), GPSpecies
         )
         self.species.setup(state, species_param)
 
-        size = state.parameters.getInt(size_param, def_base.push(Subpopulation.P_SUBPOPSIZE), 1)
+        size = state.parameters.getInt(size_param, def_base.push(Subpopulation.P_SUBPOPSIZE))
         if size <= 0:
             state.output.fatal("Subpopulation size must be >= 1", size_param)
 
-        self.numDuplicateRetries = state.parameters.getInt(retries_param, def_base.push(Subpopulation.P_RETRIES), 0)
+        self.numDuplicateRetries = state.parameters.getInt(retries_param, def_base.push(Subpopulation.P_RETRIES))
         if self.numDuplicateRetries < 0:
             state.output.fatal("Duplicate retries must be >= 0", retries_param)
 
@@ -66,13 +69,13 @@ class Subpopulation:
     def populate(self, state:EvolutionState, thread: int):
         start = 0
 
-        seen = set() if self.numDuplicateRetries >= 1 else None
+        self.duplicateSet = Set[GPIndividual] if self.numDuplicateRetries >= 1 else None
 
         for i in range(start, len(self.individuals)):
             for _ in range(self.numDuplicateRetries + 1):
                 ind = self.species.newIndividual(state, thread)
-                if seen is None or ind not in seen:
+                if self.duplicateSet is None or ind.printTrees() not in self.duplicateSet:
                     self.individuals[i] = ind
-                    if seen is not None and ind not in seen:
-                        seen.add(ind)
+                    if self.duplicateSet is not None and ind not in self.duplicateSet:
+                        self.duplicateSet.add(ind.printTrees())
                     break

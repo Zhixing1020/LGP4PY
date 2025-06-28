@@ -33,7 +33,7 @@ class ParameterDatabase:
     
     def getBoolean(self, param:Parameter, default_param:Parameter=None, default_val:bool=False)->bool:
         val = self.getParamValue(param, default_param)
-        return bool(val) if val is not None else default_val
+        return val.lower() == 'true' if val is not None else default_val
 
     def getInt(self, param:Parameter, default_param:Parameter=None)->int:
         val = self.getParamValue(param, default_param)

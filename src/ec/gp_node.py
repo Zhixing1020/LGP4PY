@@ -11,6 +11,8 @@ from src.ec.gp_node_parent import GPNodeParent
 
 from tasks import Problem
 
+# import copy
+
 class GPNodeGatherer:
         def __init__(self):
             self.node:GPNode = None
@@ -119,6 +121,7 @@ class GPNode(GPNodeParent):
     #     return s + (1 if g.test(self) else 0)
 
     def numNodes(self, nodesearch: int) -> int:
+        from src.lgp.individual.primitive import WriteRegisterGPNode, ReadRegisterGPNode
         s = 0
         for child in self.children:
             if child is not None:
@@ -159,6 +162,7 @@ class GPNode(GPNodeParent):
     
     
     def nodeInPosition(self, p: int, g: GPNodeGatherer, nodesearch: int) -> int:
+        from src.lgp.individual.primitive import WriteRegisterGPNode, ReadRegisterGPNode
         if (nodesearch == self.NODESEARCH_ALL or
             (nodesearch == self.NODESEARCH_TERMINALS and len(self.children) == 0) or
             (nodesearch == self.NODESEARCH_NONTERMINALS and len(self.children) > 0 and not isinstance(self, WriteRegisterGPNode)) or
@@ -190,8 +194,8 @@ class GPNode(GPNodeParent):
         pass
 
     def lightClone(self) -> 'GPNode':
-        import copy
-        obj = copy.deepcopy(self)
+        
+        obj = self.__class__()
         if len(self.children) == 0:
             obj.children = self.children  # share array (assumed to be reused zeroChildren)
         else:
@@ -311,6 +315,7 @@ class GPNode(GPNodeParent):
         pass
 
     def collectReadRegister(self, s: Set[int]):
+        from src.lgp.individual.primitive import ReadRegisterGPNode
         if isinstance(self, ReadRegisterGPNode):
             s.add(self.getIndex())  # Assumes getIndex() method exists in ReadRegisterGPNode
 

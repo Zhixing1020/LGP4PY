@@ -1,8 +1,7 @@
 from src.ec.gp_tree import GPTree
 from src.ec.gp_defaults import GPDefaults
-# from src.ec.gp_individual import GPIndividual
 from src.ec.gp_node import GPNode
-from copy import __deepcopy__
+# from copy import deepcopy
 
 class GPIndividual:
     '''A simple GP individual with only one tree'''
@@ -50,20 +49,20 @@ class GPIndividual:
         #     self.trees[x].setup(state, p)
         self.treelist = [GPTree]*1
         p = base.push(self.P_TREE).push(str(0))
-        self.trees[0] = state.parameters.getInstanceForParameterEq(p, def_base.push(self.P_TREE).push(str(0)), GPTree)
-        self.trees[0].owner = self
-        self.trees[0].setup(state, p)
+        self.treelist[0] = state.parameters.getInstanceForParameter(p, def_base.push(self.P_TREE).push(str(0)), GPTree)
+        self.treelist[0].owner = self
+        self.treelist[0].setup(state, p)
 
-        initializer = state.initializer  # expected to be GPInitializer
-        for x in range(t):
-            constraints = self.trees[x].constraints(initializer)
-            for node_array in constraints.functionset.nodes:
-                for node in node_array:
-                    node.check_constraints(state, x, self, base)
+        # initializer = state.initializer  # expected to be GPInitializer
+        # for x in range(t):
+        #     constraints = self.trees[x].constraints(initializer)
+        #     for node_array in constraints.functionset.nodes:
+        #         for node in node_array:
+        #             node.check_constraints(state, x, self, base)
 
     def printTrees(self)->str:
         res = ""
-        for tree, i in self.treelist, range(len(self.treelist)):
+        for i, tree in enumerate( self.treelist ):
             res += f"Tree {i}: {tree}"
 
         return res
@@ -71,7 +70,7 @@ class GPIndividual:
     def printIndividualForHuman(self)->str:
         res = ""
         res += self.EVALUATED_PREAMBLE + ("true" if self.evaluated else "false") + "\n"
-        res += "Fitness: " + self.fitness + "\n"
+        res += "Fitness: " + str(self.fitness) + "\n"
         
         res += self.printTrees() + "\n"
 
@@ -81,7 +80,7 @@ class GPIndividual:
         myobj = self.__class__()
         myobj.fitness = self.fitness.clone() if self.fitness is not None else None
         myobj.treelist = [tree.clone() for tree in self.treelist]
-        for tree in myobj.trees:
+        for tree in myobj.treelist:
             tree.owner = myobj
         myobj.evaluated = self.evaluated
         return myobj
@@ -95,8 +94,8 @@ class GPIndividual:
         myobj.evaluated = self.evaluated
         return myobj
     
-    def __deepcopy__(self):
-        self.clone()
+    # def __deepcopy__(self):
+    #     self.clone()
 
     def size(self):
         return sum(tree.child.num_nodes(GPNode.NODESEARCH_ALL) for tree in self.treelist)
@@ -117,3 +116,18 @@ class GPIndividual:
         
     def getTreesLength(self)->int:
         return len(self.treelist)
+    
+
+if __name__ == "__main__":
+    
+    from src.ec.util.parameter import Parameter
+    builder = GPBuilder()
+    state = EvolutionState('D:\\zhixing\\科研\\LGP4PY\\LGP4PY\\tasks\\Symbreg\\parameters\\LGP_test.params')
+    state.setup("")
+    state.primitive_set = GPPrimitiveSet()
+    state.primitive_set.setup(state, Parameter('gp.fs.0'))  # here, I need to use a default parameter name
+    # fun_set = {Add(), InputFeatureGPNode()}
+    tree = GPTree()
+    
+    individual = GPIndividual()
+    individual.setup(state, Parameter('pop.subpop.0.species.ind'))

@@ -2,11 +2,12 @@
 from src.ec.evolution_state import EvolutionState
 from src.ec.gp_defaults import GPDefaults
 from src.ec.util import *
-from copy import __deepcopy__
+from copy import deepcopy
 
 class Fitness:
 
-    P_MAXIMIZE = "maximize"
+    P_MAXIMIZE: str = "maximize"
+    P_FITNESS: str = "fitness"
 
     def __init__(self):
 
@@ -27,7 +28,6 @@ class Fitness:
         def_param = self.default_base()
        
         self.maximize = state.parameters.getBoolean(base.push(self.P_MAXIMIZE), def_param.push(self.P_MAXIMIZE), False)
-
         # for i in range(num):
         #     self.min_objective[i] = state.parameters.get_double_with_default(base.push(self.P_MINOBJECTIVES).push(str(i)), def_param.push(self.P_MINOBJECTIVES).push(str(i)), 0.0)
         #     self.max_objective[i] = state.parameters.get_double_with_default(base.push(self.P_MAXOBJECTIVES).push(str(i)), def_param.push(self.P_MAXOBJECTIVES).push(str(i)), 1.0)
@@ -69,8 +69,8 @@ class Fitness:
     def default_base(self):
         return GPDefaults.base().push(self.P_FITNESS)
     
-    def __str__(self):
-        return self.value
+    def __str__(self)->str:
+        return str(self.value)
 
     def read_fitness(self, state, reader):
         line = reader.readline()

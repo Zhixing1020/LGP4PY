@@ -38,3 +38,13 @@ class Population:
     def populate(self, state:EvolutionState, thread: int):
         for subpop in self.subpops:
             subpop.populate(state, thread)
+
+    def emptyclone(self)->'Population':
+        from src.ec.subpopulation import Subpopulation
+        pop = self.__class__()
+        pop.subpops = [Subpopulation] * len(self.subpops)
+
+        for i, p in enumerate(self.subpops):
+            pop.subpops[i] = p.emptyclone()
+        
+        return pop

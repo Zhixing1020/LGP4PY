@@ -2,6 +2,7 @@
 from src.ec import *
 from src.ec.util import *
 from functools import cmp_to_key
+import random
 
 class Breeder:
     """
@@ -20,6 +21,8 @@ class Breeder:
     def __init__(self):
         self.elitenum = None
         self.toReevaluateElite = None
+        self.operators = None
+        self.operatorRate = None
 
     def setup(self, state:EvolutionState, base:Parameter):
         p = Parameter(state.P_POP).push(Population.P_SIZE)
@@ -45,10 +48,16 @@ class Breeder:
         Breeds state.population, returning a new population. In general,
         state.population should not be modified.
         """
+        newpop = state.population.emptyclone()
+
+        self.loadElites(state, newpop)
 
         '''
         1. parallely use one of the operator to produce new individuals
         '''
+
+        op = random.choices(self.operators, weights=self.operatorRate, k=1)[0]
+
         # use subpopulation.duplicateSet to eliminate duplicate individuals
         '''
         2. local search

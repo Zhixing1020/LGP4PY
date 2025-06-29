@@ -20,10 +20,10 @@ class Subpopulation:
     def defaultBase(self):
         return ECDefaults.base().push(Subpopulation.P_SUBPOPULATION)
     
-    def emptyClone(self):
-        clone = Subpopulation()
-        clone.individuals = [None] * len(self.individuals)
-        return clone
+    # def emptyClone(self):
+    #     clone = Subpopulation()
+    #     clone.individuals = [None] * len(self.individuals)
+    #     return clone
 
     # def resize(self, to_this: int):
     #     self.individuals = self.individuals[:to_this] + [None] * max(0, to_this - len(self.individuals))
@@ -79,3 +79,10 @@ class Subpopulation:
                     if self.duplicateSet is not None and ind.printTrees() not in self.duplicateSet:
                         self.duplicateSet.add(ind.printTrees())
                     break
+
+    def emptyclone(self)->'Subpopulation':
+        subp = self.__class__()
+        subp.species = self.species
+        subp.numDuplicateRetries = self.numDuplicateRetries
+        subp.individuals = [None] * len(self.individuals)
+        return subp

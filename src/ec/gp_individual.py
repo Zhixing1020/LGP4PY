@@ -76,6 +76,9 @@ class GPIndividual:
 
         return res
     
+    def __str__(self)->str:
+        return self.printIndividualForHuman()
+    
     def clone(self):
         myobj = self.__class__()
         myobj.fitness = self.fitness.clone() if self.fitness is not None else None

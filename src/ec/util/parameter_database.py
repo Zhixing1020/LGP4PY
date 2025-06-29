@@ -59,7 +59,7 @@ class ParameterDatabase:
         module = __import__(".".join(components[:-1]), fromlist=[components[-1]])
         return getattr(module, components[-1])()
 
-    def exists(self, param:Parameter, default:Parameter=None)->bool:
+    def exists(self, param:str, default:str=None)->bool:
         return param in self.params
     
 

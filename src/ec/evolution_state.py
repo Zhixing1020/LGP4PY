@@ -19,12 +19,14 @@ class EvolutionState:
     P_FINISHER: str = "finish"
     P_BREEDER: str = "breed"
     P_EVALUATOR: str = "eval"
+    P_POP: str = "pop"
     P_STATISTICS: str = "stat"
     P_EXCHANGER: str = "exch"
     P_GENERATIONS: str = "generations"
     P_NODEEVALUATIONS: str = "nodeevaluations"
     P_EVALUATIONS: str = "evaluations"
     P_BUILDER: str = "gp.tc.0.init"  # only for the initializer in the first tree constraint
+    P_PRIMSET: str = "gp.fs.0"
 
     def __init__(self, parameterPath:str):
         # ParameterDatabase
@@ -123,9 +125,16 @@ class EvolutionState:
         # self.exchanger = self.parameters.getInstanceForParameter(self.P_EXCHANGER, None, Exchanger)
         # self.exchanger.setup(self, self.P_EXCHANGER)
 
-        # if self.parameters.exists(self.P_BUILDER):
-        #     self.builder = self.parameters.getInstanceForParameter(self.P_BUILDER, None, GPBuilder)
-        #     self.builder.setup(self, self.P_BUILDER)
+        from src.ec.gp_builder import GPBuilder
+        if self.parameters.exists(self.P_BUILDER):
+            self.builder = self.parameters.getInstanceForParameter(self.P_BUILDER, None, GPBuilder)
+            self.builder.setup(self, Parameter(self.P_BUILDER))
+
+        from src.ec.gp_primitive_set import GPPrimitiveSet
+        # if self.parameters.exists(self.P_PRIMSET):
+            # self.primitive_set = self.parameters.getInstanceForParameter(self.P_PRIMSET, None, GPPrimitiveSet)
+        self.primitive_set = GPPrimitiveSet()
+        self.primitive_set.setup(self, Parameter(self.P_PRIMSET))
 
         self.generation = 0
 

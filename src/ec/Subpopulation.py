@@ -50,7 +50,7 @@ class Subpopulation:
         if self.numDuplicateRetries < 0:
             state.output.fatal("Duplicate retries must be >= 0", retries_param)
 
-        self.individuals = [None] * size
+        self.individuals = [GPIndividual] * size
 
         # if self.loadInds:
         #     extra = state.parameters.getStringWithDefault(
@@ -69,13 +69,13 @@ class Subpopulation:
     def populate(self, state:EvolutionState, thread: int):
         start = 0
 
-        self.duplicateSet = Set[GPIndividual] if self.numDuplicateRetries >= 1 else None
+        self.duplicateSet:Set[str] = set() if self.numDuplicateRetries >= 1 else None
 
         for i in range(start, len(self.individuals)):
             for _ in range(self.numDuplicateRetries + 1):
                 ind = self.species.newIndividual(state, thread)
                 if self.duplicateSet is None or ind.printTrees() not in self.duplicateSet:
                     self.individuals[i] = ind
-                    if self.duplicateSet is not None and ind not in self.duplicateSet:
+                    if self.duplicateSet is not None and ind.printTrees() not in self.duplicateSet:
                         self.duplicateSet.add(ind.printTrees())
                     break

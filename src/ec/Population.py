@@ -1,5 +1,40 @@
 
 
+from src.ec.evolution_state import EvolutionState
+from src.ec.util.parameter import Parameter
+# from typing import List
+
 class Population:
+
+    P_SIZE = "subpops"
+    P_SUBPOP = "subpop"
+
     def __init__(self):
-        pass
+        self.subpops = [None]
+
+    def clear(self):
+        for subp in self.subpops:
+            subp.clear()
+
+    def setup(self, state:EvolutionState, base:Parameter):
+        p = base.push(self.P_SIZE)
+        size = state.parameters.getInt(p,None)
+        if size == 0:
+            state.output.fatal("Population size must be >0.\n")
+
+        from src.ec.subpopulation import Subpopulation
+
+        self.subpops = [Subpopulation] * size
+
+        for x in range(size):
+            pp = base.push(self.P_SUBPOP).push(""+str(x))
+
+            if not state.parameters.exists(str(pp)):
+                state.output.fatal(f"The parameter {pp} is not defined\n")
+
+            self.subpops[x] = state.parameters.getInstanceForParameter(pp, None, Subpopulation)
+            self.subpops[x].setup(state, pp)
+
+    def populate(self, state:EvolutionState, thread: int):
+        for subpop in self.subpops:
+            subpop.populate(state, thread)

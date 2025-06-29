@@ -25,7 +25,7 @@ class Fitness:
 
     def setup(self, state:EvolutionState, base:Parameter):
         
-        def_param = self.default_base()
+        def_param = self.defaultBase()
        
         self.maximize = state.parameters.getBoolean(base.push(self.P_MAXIMIZE), def_param.push(self.P_MAXIMIZE), False)
         # for i in range(num):
@@ -44,10 +44,10 @@ class Fitness:
     def fitness(self)->float:
         return self.value
 
-    def is_ideal_fitness(self):
+    def isIdealFitness(self):
         return False
 
-    def equivalent_to(self, other)->bool:
+    def equivalentTo(self, other)->bool:
         if not isinstance(other, Fitness):
             return False
 
@@ -59,20 +59,20 @@ class Fitness:
         else:
             return False
 
-    def better_than(self, other)->bool:
+    def betterThan(self, other)->bool:
         if self.maximize:
             return True if self.value > other.value else False
         else:
             return True if self.value < other.value else False
 
 
-    def default_base(self):
+    def defaultBase(self):
         return GPDefaults.base().push(self.P_FITNESS)
     
     def __str__(self)->str:
         return str(self.value)
 
-    def read_fitness(self, state, reader):
+    def readFitness(self, state, reader):
         line = reader.readline()
         self.value = float(line)
 

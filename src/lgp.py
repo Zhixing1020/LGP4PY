@@ -47,6 +47,14 @@ if __name__ == "__main__":
     # species = GPSpecies()
     # species.setup(state, Parameter('pop.subpop.0.species'))
 
-    subpop = Subpopulation()
-    subpop.setup(state, Parameter('pop.subpop.0'))
-    subpop.populate(state, 0)
+    # subpop = Subpopulation()
+    # subpop.setup(state, Parameter('pop.subpop.0'))
+    # subpop.populate(state, 0)
+
+    pop = Population()
+    pop.setup(state, Parameter('pop'))
+    pop.populate(state, 0)
+
+    # for tree in subpop.individuals:
+    #     print(tree)
+    print("stop")

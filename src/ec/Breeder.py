@@ -15,33 +15,46 @@ class Breeder:
     Breeders may be multithreaded, and care must be taken when accessing shared resources.
     """
 
+    P_BREEDER = "breed"
     P_ELITE = "elite"
     P_REEVALUATE_ELITES = "reevaluate-elites"
 
     def __init__(self):
         self.elitenum = None
         self.toReevaluateElite = None
+        self.operatorNum = None
         self.operators = None
         self.operatorRate = None
 
     def setup(self, state:EvolutionState, base:Parameter):
         p = Parameter(state.P_POP).push(Population.P_SIZE)
+        default_p = self.BreederDefault()
 
         size = state.parameters.getInt(p, None)
 
         self.elitenum = [int]*size
         self.toReevaluateElite = [bool]*size
 
-        for x in range(size):
-            if state.parameters.exists(base.push(self.P_ELITE).push(""+str(x))):
-                self.elitenum[x] = state.parameters.getInt(base.push(self.P_ELITE).push(""+str(x)),None)
+        for x in range(size): # for each subpopulation
+            # load the elite settings
+            if state.parameters.exists(base.push(self.P_ELITE).push(""+str(x)), default_p.push(self.P_ELITE).push(""+str(x))):
+                self.elitenum[x] = state.parameters.getInt(
+                    base.push(self.P_ELITE).push(""+str(x)), 
+                    default_p.push(self.P_ELITE).push(""+str(x)))
             else:
                 self.elitenum[x] = 1
             
-            if state.parameters.exists(base.push(self.P_REEVALUATE_ELITES).push(""+str(x))):
-                self.toReevaluateElite[x] = state.parameters.getBoolean(base.push(self.P_REEVALUATE_ELITES).push(""+str(x)),True)
+            if state.parameters.exists(base.push(self.P_REEVALUATE_ELITES).push(""+str(x)), default_p.push(self.P_REEVALUATE_ELITES).push(""+str(x))):
+                self.toReevaluateElite[x] = state.parameters.getBoolean(base.push(self.P_REEVALUATE_ELITES).push(""+str(x)),
+                                                                        default_p.push(self.P_REEVALUATE_ELITES).push(""+str(x)),
+                                                                        True)
             else:
                 self.toReevaluateElite[x] = True
+
+            # load the selection operator
+
+
+            # load the genetic operator
 
     def breedPopulation(self, state:EvolutionState)->Population:
         """
@@ -93,7 +106,9 @@ class Breeder:
                 for e in range(self.elitenum[x]):
                     length = len( newpop.subpops[x].individuals )
                     newpop.subpops[x].individuals[length - e - 1].evaluated = False
-                
+
+    def BreederDefault(self)->Parameter:
+        return Parameter(self.P_BREEDER)
                  
 
 def compare(a:GPIndividual, b:GPIndividual):

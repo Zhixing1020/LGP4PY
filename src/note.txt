@@ -1,6 +1,6 @@
  embed the multi breeding pipeline into Evolution framework directly.
 
-
+the base parameter in "breeder.py" should be "pop.subpop.0.species.pipe". To see change the "pipe" or not
 
 
 ******** question *********

@@ -60,7 +60,7 @@ class ParameterDatabase:
         return getattr(module, components[-1])()
 
     def exists(self, param:str, default:str=None)->bool:
-        return param in self.params
+        return param in self.params or default in self.params
     
 
 if __name__ == "__main__":

@@ -6,20 +6,8 @@ from src.ec.population import Population
 from src.ec.evolution_state import EvolutionState
 from src.ec.gp_individual import GPIndividual
 
-class BreedingPipeline(ABC):
-    '''
-     A BreedingPipeline is a BreedingSource which provides "fresh" individuals which
-    can be used to fill a new population.  BreedingPipelines might include
-    Crossover pipelines, various Mutation pipelines, etc.  This abstract class
-    provides some default versions of various methods to simplify matters for you.
-    It also contains an array of breeding sources for your convenience.  You don't
-    have to use them of course, but this means you have to customize the
-    default methods below to make sure they get distributed to your special
-    sources.  Note that these sources may contain references to the same
-    object -- they're not necessarily distinct.  This is to provide both
-    some simple DAG features and also to conserve space.
-    '''
-
+class BreedingSource(ABC):
+   
     #Indicates that a source is the exact same source as the previous source.
     V_SAME = "same" 
 

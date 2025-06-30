@@ -11,6 +11,7 @@ from .gp_individual import GPIndividual
 from .population import Population
 from .subpopulation import Subpopulation
 from .breeder import Breeder
+from .breeding_source import BreedingSource
 from .gp_species import GPSpecies
 
 
@@ -26,6 +27,7 @@ __all__ = [
     "GPNodeParent",
     "GPPrimitiveSet",
     "Breeder",
+    "BreedingSource",
     "GPSpecies",
     "GPTree",
     "Population",

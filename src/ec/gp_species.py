@@ -4,7 +4,7 @@ from src.ec.gp_individual import GPIndividual
 from src.ec.fitness import Fitness
 from src.ec.evolution_state import EvolutionState
 from src.ec.gp_defaults import GPDefaults
-from src.ec.breeding_source import BreedingPipeline
+from src.ec.breeding_pipeline import BreedingPipeline
 from abc import ABC
 from typing import Type
 from copy import deepcopy

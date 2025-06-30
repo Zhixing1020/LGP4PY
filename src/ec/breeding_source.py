@@ -1,169 +1,71 @@
 from abc import ABC, abstractmethod
-from typing import List
-
-from src.ec.util.parameter import Parameter
-from src.ec.population import Population
-from src.ec.evolution_state import EvolutionState
-from src.ec.gp_individual import GPIndividual
+from src.ec import *
+from src.ec.util import *
+import random
 
 class BreedingSource(ABC):
-   
-    #Indicates that a source is the exact same source as the previous source.
-    V_SAME = "same" 
-
-    #Indicates the probability that the Breeding Pipeline will perform its mutative action instead of just doing reproduction.
-    P_LIKELIHOOD = "likelihood"
-
-    # Indicates that the number of sources is variable and determined by the user in the parameter file.
-    DYNAMIC_SOURCES = -1
-
-    #Standard parameter for number of sources (only used if numSources returns DYNAMIC_SOURCES
-    P_NUMSOURCES = "num-sources"
-
-    #Standard parameter for individual-selectors associated with a BreedingPipeline
-    P_SOURCE = "source"
+    '''
+    BreedingSource is an abstract superclass that defines a common interface for all components that can produce individuals for the next generation.
+    BreedingSource is the general blueprint for any object that can "breed" or "supply" individuals — including both selection and variation mechanisms.
+    It is the superclass of BreedingPipelein and SelectionMethod
+    '''
+    P_PROB = "prob"
+    NO_PROBABILITY = -1.0
 
     def __init__(self):
-        self.mybase = None
-        self.likelihood = 1.0
-        # self.sources: List[BreedingSource] = []
-
-    @abstractmethod
-    def numSources(self):
-        pass
-
-    def minChildProduction(self):
-        if len(self.sources) == 0:
-            return 0
-        return min(s.typicalIndsProduced() for s in self.sources)
-
-    def maxChildProduction(self):
-        if len(self.sources) == 0:
-            return 0
-        return max(s.typicalIndsProduced() for s in self.sources)
-
-    def typicalIndsProduced(self):
-        return self.minChildProduction()
+        self.probability = BreedingSource.NO_PROBABILITY
 
     def setup(self, state:EvolutionState, base:Parameter):
-        super().setup(state, base)
-        self.mybase = base
-        def_:Parameter = self.defaultBase()
+        default = self.defaultBase()
+        if not state.parameters.exists(base.push(self.P_PROB), default.push(self.P_PROB)):
+            self.probability = self.NO_PROBABILITY
+        else:
+            self.probability = state.parameters.getDoubleWithDefault(base.push(self.P_PROB), default.push(self.P_PROB), 0.0)
+            if self.probability < 0.0:
+                state.output.error(
+                    "Breeding Source's probability must be a double floating point value >= 0.0, or empty, which represents NO_PROBABILITY."
+                )
 
-        self.likelihood = state.parameters.getDoubleWithDefault(
-            base.push(self.P_LIKELIHOOD), def_.push(self.P_LIKELIHOOD), 1.0
-        )
-        if self.likelihood < 0.0 or self.likelihood > 1.0:
-            state.output.fatal("Breeding Pipeline likelihood must be between 0.0 and 1.0 inclusive",
-                               base.push(self.P_LIKELIHOOD), def_.push(self.P_LIKELIHOOD))
+    def getProbability(self):
+        return self.probability
 
-        numsources:int = self.numSources()
-        if numsources == self.DYNAMIC_SOURCES:
-            numsources = state.parameters.getInt(base.push(self.P_NUMSOURCES), def_.push(self.P_NUMSOURCES), 0)
-            if numsources == -1:
-                state.output.fatal("Breeding pipeline num-sources must exist and be >= 0",
-                                   base.push(self.P_NUMSOURCES), def_.push(self.P_NUMSOURCES))
-        elif numsources <= self.DYNAMIC_SOURCES:
-            raise RuntimeError("numSources() returned < DYNAMIC_SOURCES")
-        elif state.parameters.exists(base.push(self.P_NUMSOURCES), def_.push(self.P_NUMSOURCES)):
-            state.output.warning("Breeding pipeline's number of sources is hard-coded to " + str(numsources) +
-                                 " yet num-sources was provided: num-sources will be ignored.",
-                                 base.push(self.P_NUMSOURCES), def_.push(self.P_NUMSOURCES))
+    def setProbability(self, prob):
+        self.probability = prob
 
-        self.sources = [None] * numsources
-        for x in range(numsources):
-            p = base.push(self.P_SOURCE).push(str(x))
-            d = def_.push(self.P_SOURCE).push(str(x))
-            s = state.parameters.getString(p, d)
-            # if s is not None and s == self.V_SAME:
-            #     if x == 0:
-            #         state.output.fatal("Source #0 cannot be declared with \"same\".", p, d)
-            #     self.sources[x] = self.sources[x - 1]
-            # else:
-            #     self.sources[x] = state.parameters.getInstanceForParameter(p, d, BreedingSource)
-            #     self.sources[x].setup(state, p)
+    @staticmethod
+    def pickRandom(sources:list[BreedingSource], prob:list[float])->BreedingSource:
+        return random.choices(sources, prob)
 
-        state.output.exitIfErrors()
+    @staticmethod
+    def setupProbabilities(sources):
+        RandomChoice.organizeDistribution(sources, sources[0], True)
+
+    @abstractmethod
+    def typicalIndsProduced(self):
+        pass
+
+    @abstractmethod
+    def produces(self, state:EvolutionState, newpop:Population, subpopulation:int, thread:int):
+        pass
+
+    @abstractmethod
+    def prepareToProduce(self, state, subpopulation, thread):
+        pass
+
+    @abstractmethod
+    def finishProducing(self, state, subpopulation, thread):
+        pass
+
+    @abstractmethod
+    def produce(self, min:int, max:int, start:int, subpopulation:int, inds:list[GPIndividual], 
+                state:EvolutionState, thread:int)->int:
+        pass
 
     def clone(self):
-        # import copy
-        # c = copy.copy(self)
-        c = self.__class__()
-        c.sources = [None] * len( self.sources )
-        for x in range(len(self.sources)):
-            if x == 0 or self.sources[x] != self.sources[x - 1]:
-                c.sources.append(self.sources[x].clone())
-            else:
-                c.sources.append(c.sources[x - 1])
-        return c
+        obj = self.__class__()
+        obj.probability = self.probability
+        return obj
 
-    def reproduce(self, 
-                  n:int, 
-                  start:int, 
-                  subpopulation:int, 
-                  inds:List[GPIndividual], 
-                  state:EvolutionState, 
-                  thread:int, 
-                  produceChildrenFromSource:bool)->int:
-        if produceChildrenFromSource:
-            self.sources[0].produce(n, n, start, subpopulation, inds, state, thread)
-        # if isinstance(self.sources[0], SelectionMethod):
-        #     for q in range(start, n + start):
-        #         inds[q] = inds[q].clone()
-        return n
+    # def preparePipeline(self, hook):
+    #     pass
 
-    def produces(self, 
-                 state:EvolutionState, 
-                 newpop:Population, 
-                 subpopulation:int, 
-                 thread:int) -> bool:
-        for x in range(len(self.sources)):
-            if x == 0 or self.sources[x] != self.sources[x - 1]:
-                if not self.sources[x].produces(state, newpop, subpopulation, thread):
-                    return False
-        return True
-
-    def prepareToProduce(self, 
-                         state:EvolutionState, 
-                         subpopulation:int, 
-                         thread:int):
-        for x in range(len(self.sources)):
-            if x == 0 or self.sources[x] != self.sources[x - 1]:
-                self.sources[x].prepareToProduce(state, subpopulation, thread)
-
-    def finishProducing(self, 
-                         state:EvolutionState, 
-                         subpopulation:int, 
-                         thread:int):
-        for x in range(len(self.sources)):
-            if x == 0 or self.sources[x] != self.sources[x - 1]:
-                self.sources[x].finishProducing(state, subpopulation, thread)
-
-    def preparePipeline(self, hook):
-        for source in self.sources:
-            source.preparePipeline(hook)
-
-    def individualReplaced(self, 
-                           state:EvolutionState, 
-                           subpopulation:int, 
-                           thread:int, 
-                           individual:int):
-        for source in self.sources:
-            # if isinstance(source, SteadyStateBSourceForm):
-            #     source.individualReplaced(state, subpopulation, thread, individual)
-            pass
-
-    def sourcesAreProperForm(self, 
-                             state:EvolutionState):
-        for x, source in enumerate(self.sources):
-            # if not isinstance(source, SteadyStateBSourceForm):
-            #     state.output.error("Source is not SteadyStateBSourceForm",
-            #                        self.mybase.push(self.P_SOURCE).push(str(x)),
-            #                        self.defaultBase().push(self.P_SOURCE).push(str(x)))
-            # else:
-            #     source.sourcesAreProperForm(state)
-            pass
-
-    def defaultBase(self)->Parameter:
-        # Placeholder: override as needed
-        return self.mybase

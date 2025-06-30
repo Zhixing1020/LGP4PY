@@ -51,10 +51,6 @@ class Breeder:
             else:
                 self.toReevaluateElite[x] = True
 
-            # load the selection operator
-
-
-            # load the genetic operator
 
     def breedPopulation(self, state:EvolutionState)->Population:
         """

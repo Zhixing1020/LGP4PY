@@ -27,7 +27,7 @@ class GPSpecies(ABC):
         new_species.pipe_prototype = self.pipe_prototype.clone()
         return new_species
     
-    def __deepcopy__(self):
+    def __deepcopy__(self, memo):
         self.clone()
 
     def newIndividual(self, state: EvolutionState, thread: int) -> GPIndividual:

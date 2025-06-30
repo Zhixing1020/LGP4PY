@@ -14,6 +14,7 @@ class GPTree(GPNodeParent):
     P_TREE: str = "tree"
 
     def __init__(self):
+        super()
         self.child:GPNode = None
         self.owner = None
     
@@ -29,7 +30,7 @@ class GPTree(GPNodeParent):
     
     def lightClone(self) -> 'GPTree':
         # Like shallow copy: just replicate the GPTree object and share child
-        newtree = GPTree()
+        newtree:GPTree = super().clone()
         # newtree.constraints = self.constraints
         newtree.child = self.child  # NOTE: shared reference
         newtree.owner = self.owner

@@ -38,6 +38,7 @@ class GPNode(GPNodeParent):
     CHILDREN_UNKNOWN: int = -1
 
     def __init__(self):
+        super()
         # the parent of this GP node
         self.parent:GPNode = None
 
@@ -194,8 +195,8 @@ class GPNode(GPNodeParent):
         pass
 
     def lightClone(self) -> 'GPNode':
-        
-        obj = self.__class__()
+        obj:GPNode = super().clone()
+        # obj = self.__class__()
         if len(self.children) == 0:
             obj.children = self.children  # share array (assumed to be reused zeroChildren)
         else:

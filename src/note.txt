@@ -2,6 +2,7 @@
 
 the base parameter in "breeder.py" should be "pop.subpop.0.species.pipe". To see change the "pipe" or not
 
+for each individual   add a variable recording the pipeline that produces it
 
 ******** question *********
 what is GPinitializer  for?

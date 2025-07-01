@@ -11,10 +11,11 @@ class GPIndividual:
     EVALUATED_PREAMBLE = "Evaluated: "
 
     def __init__(self):
-        self.treelist:[GPTree] = []*1
-        self.evaluated = False
-        self.fitness = None
-        self.species = None
+        self.treelist:[GPTree] = []*1  # storing all the tree in this individual
+        self.evaluated = False  # evaluated or not
+        self.fitness = None  
+        self.species = None   # the species that this individual belongs to
+        self.breedingPipe = None   # the pipeline that produces this individuals
 
     @classmethod
     def default_base(cls):

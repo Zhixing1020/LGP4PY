@@ -12,6 +12,8 @@ from .population import Population
 from .subpopulation import Subpopulation
 from .breeder import Breeder
 from .breeding_source import BreedingSource
+from .breeding_pipeline import BreedingPipeline
+from .selection_method import SelectionMethod
 from .gp_species import GPSpecies
 
 
@@ -28,6 +30,8 @@ __all__ = [
     "GPPrimitiveSet",
     "Breeder",
     "BreedingSource",
+    "BreedingPipeline",
+    "SelectionMethod",
     "GPSpecies",
     "GPTree",
     "Population",

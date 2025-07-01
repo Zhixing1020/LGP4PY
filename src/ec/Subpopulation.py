@@ -15,7 +15,7 @@ class Subpopulation:
         self.individuals = []
         self.numDuplicateRetries = 0
         self.species = None
-        self.duplicateSet = None
+        self.duplicateSet:Set[str] = None
 
     def defaultBase(self):
         return ECDefaults.base().push(Subpopulation.P_SUBPOPULATION)
@@ -85,4 +85,5 @@ class Subpopulation:
         subp.species = self.species
         subp.numDuplicateRetries = self.numDuplicateRetries
         subp.individuals = [None] * len(self.individuals)
+        subp.duplicateSet = set() if self.numDuplicateRetries >= 1 else None
         return subp

@@ -15,7 +15,7 @@ class BreedingPipeline(ABC, BreedingSource):
     BreedingPipeline is a concrete subclass of BreedingSource that performs genetic operations like crossover, mutation, or reproduction. 
     It takes input from one or more other BreedingSources (often SelectionMethods), applies a genetic operator, and outputs individuals.
     '''
-    '''Here, I directly implement the MultiBreedingPipeline in ECJ'''
+    
     #Indicates that a source is the exact same source as the previous source.
     V_SAME = "same" 
 
@@ -31,55 +31,48 @@ class BreedingPipeline(ABC, BreedingSource):
     #Standard parameter for individual-selectors associated with a BreedingPipeline
     P_SOURCE = "source"
 
-    P_MULTIBREED = "multibreed"
-
     def __init__(self):
         self.mybase:Parameter = None
-        self.likelihood = 1.0
+        # self.likelihood = 1.0
         self.sources: List[BreedingSource] = []
         self.operatorRate: List[float] = []
 
     @abstractmethod
     def numSources(self):
-        return len(self.sources)
+        pass
 
-    def minChildProduction(self):
+    def minChildProduction(self)->int:
         if len(self.sources) == 0:
             return 0
         return min(s.typicalIndsProduced() for s in self.sources)
 
-    def maxChildProduction(self):
+    def maxChildProduction(self)->int:
         if len(self.sources) == 0:
             return 0
         return max(s.typicalIndsProduced() for s in self.sources)
 
-    def typicalIndsProduced(self):
+    def typicalIndsProduced(self)->int:
         return self.maxChildProduction()
+
+    def defaultBase(self)->Parameter:
+        return self.mybase
 
     def setup(self, state:EvolutionState, base:Parameter):
         super().setup(state, base)
         self.mybase = base
         def_:Parameter = self.defaultBase()
 
-        self.likelihood = state.parameters.getDoubleWithDefault(
-            base.push(self.P_LIKELIHOOD), def_.push(self.P_LIKELIHOOD), 1.0
-        )
-        if self.likelihood < 0.0 or self.likelihood > 1.0:
-            state.output.fatal(f"Breeding Pipeline likelihood must be between 0.0 and 1.0 inclusive for"
-                               +f"{base.push(self.P_LIKELIHOOD)} or {def_.push(self.P_LIKELIHOOD)}")
-
-        numsources:int = self.numSources()
-        if numsources == self.DYNAMIC_SOURCES:
-            numsources = state.parameters.getInt(base.push(self.P_NUMSOURCES), def_.push(self.P_NUMSOURCES), 0)
-            if numsources == -1:
-                state.output.fatal("Breeding pipeline num-sources must exist and be >= 0",
-                                   base.push(self.P_NUMSOURCES), def_.push(self.P_NUMSOURCES))
-        elif numsources <= self.DYNAMIC_SOURCES:
-            raise RuntimeError("numSources() returned < DYNAMIC_SOURCES")
-        elif state.parameters.exists(base.push(self.P_NUMSOURCES), def_.push(self.P_NUMSOURCES)):
-            state.output.warning("Breeding pipeline's number of sources is hard-coded to " + str(numsources) +
-                                 " yet num-sources was provided: num-sources will be ignored.",
-                                 base.push(self.P_NUMSOURCES), def_.push(self.P_NUMSOURCES))
+        # self.likelihood = state.parameters.getDoubleWithDefault(
+        #     base.push(self.P_LIKELIHOOD), def_.push(self.P_LIKELIHOOD), 1.0
+        # )
+        # if self.likelihood < 0.0 or self.likelihood > 1.0:
+        #     state.output.fatal(f"Breeding Pipeline likelihood must be between 0.0 and 1.0 inclusive for"
+        #                        +f"{base.push(self.P_LIKELIHOOD)} or {def_.push(self.P_LIKELIHOOD)}")
+        
+        numsources = state.parameters.getInt(base.push(self.P_NUMSOURCES), def_.push(self.P_NUMSOURCES), 0)
+        if numsources < 0:
+            state.output.fatal("Breeding pipeline num-sources must exist and be >= 0",
+                                base.push(self.P_NUMSOURCES), def_.push(self.P_NUMSOURCES))
 
         self.sources = [None] * numsources
         for x in range(numsources):
@@ -102,14 +95,14 @@ class BreedingPipeline(ABC, BreedingSource):
         c = super().clone()
         c.sources = [None] * len( self.sources )
         c.operatorRate = [None] * len(self.operatorRate)
-        c.likelihood = self.likelihood
+        # c.likelihood = self.likelihood
         for x in range(len(self.sources)):
             if x == 0 or self.sources[x] != self.sources[x - 1]:
-                c.sources.append(self.sources[x].clone())
-                c.operatorRate.append(self.operatorRate[x])
+                c.sources[x] = (self.sources[x].clone())
+                c.operatorRate[x] = (self.operatorRate[x])
             else:
-                c.sources.append(c.sources[x - 1])
-                c.operatorRate.append(c.operatorRate[x - 1])
+                c.sources[x] = (c.sources[x - 1])
+                c.operatorRate[x] = (c.operatorRate[x - 1])
         return c
 
     def reproduce(self, 
@@ -126,17 +119,6 @@ class BreedingPipeline(ABC, BreedingSource):
             for q in range(start, n + start):
                 inds[q] = inds[q].clone()
         return n
-
-    def produces(self, 
-                 state:EvolutionState, 
-                 newpop:Population, 
-                 subpopulation:int, 
-                 thread:int) -> bool:
-        for x in range(len(self.sources)):
-            if x == 0 or self.sources[x] != self.sources[x - 1]:
-                if not self.sources[x].produces(state, newpop, subpopulation, thread):
-                    return False
-        return True
 
     def prepareToProduce(self, 
                          state:EvolutionState, 
@@ -179,18 +161,4 @@ class BreedingPipeline(ABC, BreedingSource):
     #         #     source.sourcesAreProperForm(state)
     #         pass
 
-    def defaultBase(self)->Parameter:
-        # Placeholder: override as needed
-        return self.mybase.push(self.P_MULTIBREED)
     
-    def produce(self, min:int, max:int, start:int, subpopulation:int, inds:list[GPIndividual], 
-                state:EvolutionState, thread:int)->int:
-        op = random.choices(self.sources, weights=self.operatorRate, k=1)[0]
-
-        total = op.produce(min,max,start,subpopulation,inds,state,thread)
-
-        if isinstance(op, SelectionMethod):
-            for q in range(start, total+start):
-                inds[q] = inds[q].clone()
-        
-        return total

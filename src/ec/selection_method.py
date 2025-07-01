@@ -15,9 +15,6 @@ class SelectionMethod(BreedingSource, ABC):
     def typicalIndsProduced(self):
         return self.INDS_PRODUCED
 
-    def produces(self, state: EvolutionState, newpop: Population, subpopulation: int, thread: int) -> bool:
-        return True
-
     def prepareToProduce(self, state: EvolutionState, subpopulation: int, thread: int):
         return
 
@@ -25,7 +22,7 @@ class SelectionMethod(BreedingSource, ABC):
         return
 
     def produce(self, min: int, max: int, start: int, subpopulation: int,
-                inds: list, state: EvolutionState, thread: int) -> int:
+                inds: list, state: EvolutionState, thread: int)->tuple[int, list[GPIndividual]]:
         n = self.INDS_PRODUCED
         if n < min:
             n = min
@@ -33,10 +30,13 @@ class SelectionMethod(BreedingSource, ABC):
             n = max
 
         for q in range(n):
-            pos = self.produce(subpopulation, state, thread)
+            pos = self.produce_select(subpopulation, state, thread)
             inds[start + q] = state.population.subpops[subpopulation].individuals[pos]
-        return n
+
+        res = [ind for ind in inds[start:start+n]]
+        
+        return n, res
 
     @abstractmethod
-    def produce(self, subpopulation: int, state: EvolutionState, thread: int) -> int:
+    def produce_select(self, subpopulation: int, state: EvolutionState, thread: int) -> int:
         pass

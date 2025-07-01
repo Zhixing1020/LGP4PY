@@ -19,6 +19,8 @@ class Breeder:
     P_ELITE = "elite"
     P_REEVALUATE_ELITES = "reevaluate-elites"
 
+    max_tries = 5
+
     def __init__(self):
         self.elitenum = None
         self.toReevaluateElite = None
@@ -57,21 +59,47 @@ class Breeder:
         Breeds state.population, returning a new population. In general,
         state.population should not be modified.
         """
-        newpop = state.population.emptyclone()
+        newpop:Population = state.population.emptyclone()
 
         self.loadElites(state, newpop)
 
-        '''
-        1. parallely use one of the operator to produce new individuals
-        '''
+        for subpop_i in range(len(newpop.subpops)):
+            subp:Subpopulation = newpop.subpops[subpop_i]
+            old_subp:Subpopulation = state.population.subpops[subpop_i]
+            from_i = 0
+            numind_i = len(subp.individuals) - self.elitenum[subpop_i]
 
-        op = random.choices(self.operators, weights=self.operatorRate, k=1)[0]
+            bp:BreedingPipeline = subp.species.pipe_prototype
 
-        # use subpopulation.duplicateSet to eliminate duplicate individuals
-        '''
-        2. local search
-        '''
-        pass
+            bp.prepareToProduce(state,subpop_i,0)
+
+            x = from_i
+
+            while x < numind_i:
+                for tryi in range(self.max_tries):
+                    tmp_x, res_inds = bp.produce(
+                        1,numind_i-x,x,subpop_i,
+                        subp.individuals,
+                        state,0
+                    )
+
+                    exist = False # no duplication
+                    if subp.numDuplicateRetries >= 1: # use subpopulation.duplicateSet to eliminate duplicate individuals
+                        for ind in res_inds:
+                            exist = exist or (True if subp.duplicateSet is not None and ind.printTrees() in subp.duplicateSet 
+                                              and old_subp.duplicateSet is not None and ind.printTrees() in old_subp.duplicateSet
+                                              else False)                            
+                    
+                    if not exist or tryi + tmp_x > self.max_tries: # we can move on producing more new individuals now
+                        x += tmp_x
+                        if subp.numDuplicateRetries >= 1:
+                            for ind in res_inds:
+                                subp.duplicateSet.add(ind.printTrees()) 
+                        break
+
+            bp.finishProducing(state,subpop_i,0)
+
+        return newpop
 
     def loadElites(self, state:EvolutionState, newpop:Population):
         for x in range(len (state.population.subpops) ):

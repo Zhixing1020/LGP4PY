@@ -29,23 +29,11 @@ class BreedingSource(ABC):
     def getProbability(self):
         return self.probability
 
-    def setProbability(self, prob):
-        self.probability = prob
-
-    @staticmethod
-    def pickRandom(sources:list[BreedingSource], prob:list[float])->BreedingSource:
-        return random.choices(sources, prob)
-
-    @staticmethod
-    def setupProbabilities(sources):
-        RandomChoice.organizeDistribution(sources, sources[0], True)
+    # def setProbability(self, prob):
+    #     self.probability = prob
 
     @abstractmethod
     def typicalIndsProduced(self):
-        pass
-
-    @abstractmethod
-    def produces(self, state:EvolutionState, newpop:Population, subpopulation:int, thread:int):
         pass
 
     @abstractmethod
@@ -58,7 +46,7 @@ class BreedingSource(ABC):
 
     @abstractmethod
     def produce(self, min:int, max:int, start:int, subpopulation:int, inds:list[GPIndividual], 
-                state:EvolutionState, thread:int)->int:
+                state:EvolutionState, thread:int)->tuple[int, list[GPIndividual]]:
         pass
 
     def clone(self):
@@ -69,3 +57,5 @@ class BreedingSource(ABC):
     # def preparePipeline(self, hook):
     #     pass
 
+    def __str__(self):
+        return self.__class__.__name__

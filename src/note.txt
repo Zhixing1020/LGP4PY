@@ -30,3 +30,6 @@ no hash code
 4. number of nodes and collect a node based on specific types
 5. node equivalent and tree equivalent
 
+6. breeding pipeline  properly set up
+7. the returning   tuple[int, list[GPIndividual]]   can it work well.  each individual has its own address,  the crossover and mutation have different returning number,  it does not overwrite the elite individuals, 
+

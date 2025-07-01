@@ -2,7 +2,7 @@ from src.ec import *
 # from src.ec.gp_individual import GPIndividual
     
 from abc import ABC, abstractmethod
-from typing import List, Optional, Any
+from typing import List, Optional, Set
 
 from tasks.problem import Problem
 from src.lgp.individual.gp_tree_struct import GPTreeStruct
@@ -106,7 +106,7 @@ class LGPIndividual(ABC, GPIndividual):
         self.numOutputRegs = len(self.outputRegister)
         self.tmp_numOutputRegs = self.numOutputRegs
 
-    def setRegisters(self, ind:int, value: float):
+    def setRegister(self, ind:int, value: float):
         self.registers[ind] = value
 
     def setRegisters(self, registers: list[float]):
@@ -150,11 +150,11 @@ class LGPIndividual(ABC, GPIndividual):
     def clone(self):
         # a deep clone
         myobj: LGPIndividual = super().clone()
-        myobj.treelist = []
-        for tree in self.getTreelist():
-            t = tree.clone()
-            t.owner = myobj
-            myobj.getTreelist().append(t)
+        # myobj.treelist = []
+        # for tree in self.getTreelist():
+        #     t = tree.clone()
+        #     t.owner = myobj
+        #     myobj.getTreelist().append(t)
         myobj.copyLGPproperties(self)
         return myobj
 
@@ -162,8 +162,7 @@ class LGPIndividual(ABC, GPIndividual):
         self.numRegs = len(obj.getRegisters())
         self.MaxNumTrees = obj.getMaxNumTrees()
         self.MinNumTrees = obj.getMinNumTrees()
-        for i, v in enumerate(obj.getRegisters()):
-            self.setRegisters(i, v)
+        self.setRegisters(obj.getRegisters())
 
         # self.flowctrl = LGPFlowController()
         # self.maxIterTimes = obj.getFlowController().maxIterTimes
@@ -180,12 +179,12 @@ class LGPIndividual(ABC, GPIndividual):
         # self.float_numOutputRegs = obj.isFloatingOutputs()
 
     def lightClone(self):
-        myobj: LGPIndividual = super().clone()
-        myobj.treelist = []
-        for tree in self.getTreelist():
-            t = tree.lightClone()
-            t.owner = myobj
-            myobj.getTreelist().append(t)
+        myobj: LGPIndividual = super().lightClone()
+        # myobj.treelist = []
+        # for tree in self.getTreelist():
+        #     t = tree.lightClone()
+        #     t.owner = myobj
+        #     myobj.getTreelist().append(t)
         myobj.copyLGPproperties(self)
         return myobj
 
@@ -311,7 +310,7 @@ class LGPIndividual(ABC, GPIndividual):
         idx = n - 1
 
         while idx >= 0:
-            tree = treelist[idx]
+            tree:GPTreeStruct = treelist[idx]
             tree.effRegisters = set(targetRegister)
 
             # if isinstance(tree.child.children[0], Branching):
@@ -437,8 +436,9 @@ class LGPIndividual(ABC, GPIndividual):
     def makeGraphvizRule(self) -> str:
         return self.makeGraphvizRule(list(self.getOutputRegisters()))
 
-    def wrapper(self, predict_list: List[np.ndarray], target_list: List[np.ndarray], state, thread, problem):
-        MAX_SAMPLE = self.wrap_max_sample
+    def wrapper(self, predict_list: List[np.ndarray], target_list: List[np.ndarray], 
+                state:EvolutionState, thread:int, problem:Problem):
+        MAX_SAMPLE = self.batchsize
 
         num_outputs = target_list[0].shape[0]
         sample_size = min(len(predict_list), MAX_SAMPLE)
@@ -470,9 +470,9 @@ class LGPIndividual(ABC, GPIndividual):
 
             W = np.concatenate(([lr.intercept_], lr.coef_))
 
-            self.weight_norm = 0
-            if self.normalize_wrap:
-                self.weight_norm = np.sqrt(np.sum(np.abs(W[1:])) / len(W)) * self.normalize_f
+            # self.weight_norm = 0
+            # if self.normalize_wrap:
+            #     self.weight_norm = np.sqrt(np.sum(np.abs(W[1:])) / len(W)) * self.normalize_f
 
             instr = self.constructInstr(self.outputRegister[tar], W)
             self.wraplist.append(instr)
@@ -486,3 +486,115 @@ class LGPIndividual(ABC, GPIndividual):
         # Return a new list of updated predictions
         newpred = [np.array(predict_list[i].copy()) for i in range(len(target_list))]
         return newpred
+
+    def getWrapper(self):
+        return self.wraplist
+    
+    def constructInstr(self, out_index: int, W: List[float]) -> GPTreeStruct:
+        cand = GPTreeStruct()
+
+        des_reg = WriteRegisterGPNode()
+        des_reg.setIndex(out_index)
+        des_reg.argposition = 0
+        N = des_reg
+        cand.child = N
+        N.children = [None]
+
+        for r in range(len(self.outputRegister) + 1):
+            n = self.Add_Mul_Coef_R(W, r)
+            N.children[0] = n
+            N = n
+
+        return cand
+    
+    def Add_Mul_Coef_R(self, W: List[float], index: int) -> GPNode:
+        if index < len(W) - 1:
+            A:ConstantGPNode = ConstantGPNode()
+            A.setValue(W[index + 1])
+            A.argposition = 0
+
+            src_reg = ReadRegisterGPNode()
+            src_reg.setIndex(self.outputRegister[index])
+            src_reg.argposition = 0
+
+            n = Add()
+            n.children = [None, None]
+
+            mul = Mul()
+            mul.children = [A, src_reg]
+            n.children[1] = mul
+
+            return n
+        else:
+            A = ConstantGPNode()
+            A.setValue(W[0])
+            A.argposition = 0
+            return A
+        
+    def makeGraphvizInstr(self, instr_index: int, inputs: Set[str], used_terminals: List[str],
+                      not_used: Set[int], cntindex: 'AtomicInteger') -> str:
+        connection = ""
+        tree = self.getTree(instr_index)
+
+        out_idx = tree.child.getIndex()
+        if out_idx in not_used:
+            connection += f"R{out_idx}[shape=box];\n"
+            connection += f"R{out_idx}->" + str(instr_index) + ";\n"
+            not_used.remove(out_idx)
+
+        for c, child in enumerate(tree.child.children[0].children):
+            connection += self.makeGraphvizSubInstr(child, instr_index, c,
+                                                    inputs, used_terminals, str(instr_index), cntindex)
+        return connection
+    
+    def makeGraphvizSubInstr(self, node: GPNode, instr_index: int, child_index: int,
+                          inputs: Set[str], used_terminals: List[str], parent_label: str,
+                          cntindex: 'AtomicInteger') -> str:
+        res = ""
+        if isinstance(node, (InputFeatureGPNode)):
+            label = str(node)
+            if label not in inputs:
+                inputs.add(label)
+                res += f"{label}[shape=box];\n"
+            res += f"{parent_label}->{label}[label=\"{child_index}\"];\n"
+            return res
+
+        # if isinstance(node, Entity) and node.expectedChildren() == 0:
+        #     label = node.toGraphvizString()
+        #     if label not in inputs:
+        #         inputs.add(label)
+        #         res += f"\"{label}\"[shape=box];\n"
+        #     res += f"{parent_label}->\"{label}\"[label=\"{child_index}\"];\n"
+        #     return res
+
+        if isinstance(node, ReadRegisterGPNode):
+            reg_idx = node.getIndex()
+            for j in range(instr_index - 1, -1, -1):
+                visit:GPTreeStruct = self.getTree(j)
+                if not visit.status:
+                    continue
+                if visit.child.getIndex() == reg_idx:
+                    res += f"{parent_label}->{j}[label=\"{child_index}\"];\n"
+                    break
+            else: # if there is still source registers, connect the instruction with initial values
+                if used_terminals[reg_idx] not in inputs:
+                    inputs.add(used_terminals[reg_idx])
+                    res += f"{used_terminals[reg_idx]}[shape=box];\n"
+                res += f"{parent_label}->{used_terminals[reg_idx]}[label=\"{child_index}\"];\n"
+            return res
+
+        label = str(cntindex.value)
+        cntindex.value = cntindex.get() + 1
+        res += f"{label}[label=\"{node.toGraphvizString()}\"];\n"
+        res += f"{parent_label}->{label}[label=\"{child_index}\"];\n"
+        for x, child in enumerate(node.children):
+            res += self.makeGraphvizSubInstr(child, instr_index, x, inputs, used_terminals, label, cntindex)
+        return res
+
+
+
+from dataclasses import dataclass
+
+@dataclass
+class AtomicInteger:
+    value:int = 0

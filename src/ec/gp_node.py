@@ -280,7 +280,10 @@ class GPNode(GPNodeParent):
     @abstractmethod
     def __str__(self)->str:
         pass
-
+    
+    def toGraphvizString(self)->str:
+        return str(self)
+    
     def makeGraphvizTree(self) -> str:
         return (
             "digraph g {\n"

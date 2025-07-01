@@ -15,7 +15,7 @@ class Fitness:
         self.value: float = 1e7
 
     def clone(self):
-        new_fitness = Fitness()
+        new_fitness = self.__class__()
         new_fitness.value = self.value
         new_fitness.maximize = self.maximize
         return new_fitness

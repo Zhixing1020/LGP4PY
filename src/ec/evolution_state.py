@@ -6,6 +6,7 @@ from src.ec.util.output import Output
 import random
 
 class EvolutionState:
+    # 
 
     # Run status codes
     R_SUCCESS: int = 0

@@ -1,8 +1,488 @@
-
-from src.ec.gp_individual import GPIndividual
-
-class LGPIndividual(GPIndividual):
+from src.ec import *
+# from src.ec.gp_individual import GPIndividual
     
+from abc import ABC, abstractmethod
+from typing import List, Optional, Any
 
-    def getRegisters(self, index:int)->float:
-        pass
+from tasks.problem import Problem
+from src.lgp.individual.gp_tree_struct import GPTreeStruct
+from src.lgp.individual.primitive import *
+from src.lgp.util.linear_regression import LinearRegression
+
+import numpy as np
+from sklearn.linear_model import LinearRegression
+
+class LGPIndividual(ABC, GPIndividual):
+    P_NUMREGISTERS = "numregisters"
+    P_MAXNUMTREES = "maxnumtrees"
+    P_MINNUMTREES = "minnumtrees"
+    P_INITMAXNUMTREES = "init_maxnumtrees"
+    P_INITMINNUMTREES = "init_minnumtrees"
+    P_RATEFLOWOPERATOR = "rate_flowoperator"
+    P_MAXITERTIMES = "max_itertimes"
+    P_NUMOUTPUTREGISTERS = "num-output-register"
+    P_OUTPUTREGISTER = "output-register"
+    # P_FLOATOUTPUT = "to-float-outputs"
+    P_EFFECTIVE_INITIAL = "effective_initial"
+
+    def __init__(self):
+        super().__init__()
+        self.privateParameter = None
+        self.MaxNumTrees = 0
+        self.MinNumTrees = 0
+        self.initMaxNumTrees = 0
+        self.initMinNumTrees = 0
+        self.numRegs = 0
+        self.numOutputRegs = 0
+        self.eff_initialize = False
+        self.registers = []
+        self.wraplist = []
+        # self.flowctrl = None
+        # self.rateFlowOperator = 0.0
+        # self.maxIterTimes = 0
+        self.outputRegister = []
+        self.fastFlag = 0
+        self.exec_trees = []
+
+        # self.tmp_numOutputRegs = 0
+        # self.float_numOutputRegs = False
+        # self.initReg = []
+        # self.init_ConReg = []
+        # self.initReg_values = []
+        # self.constraintsNum = 0
+
+    def getRegisters(self):
+        return self.registers
+
+    def getRegistersIndex(self, i: int) -> float:
+        return self.registers[i]
+
+    def getOutputRegisters(self):
+        return self.outputRegister
+
+    def setOutputRegisters(self, tar: List[int]):
+        self.outputRegister = tar.copy()
+
+    def getNumRegs(self) -> int:
+        return self.numRegs
+
+    def getNumOutputRegs(self) -> int:
+        return self.numOutputRegs
+    
+    def getMaxNumTrees(self) -> int:
+        return self.MaxNumTrees
+
+    def getMinNumTrees(self) -> int:
+        return self.MinNumTrees
+
+    def getInitMaxNumTrees(self) -> int:
+        return self.initMaxNumTrees
+
+    def getInitMinNumTrees(self) -> int:
+        return self.initMinNumTrees
+
+    # def getFlowController(self):
+    #     return self.getFlowctrl()
+
+    # def getrateFlowOperator(self) -> float:
+    #     return self.rateFlowOperator
+
+    def resetIndividual(self, numReg: int, maxIterTime: int, outReg: Optional[List[int]] = None):
+        self.numRegs = numReg
+        self.maxIterTimes = maxIterTime
+        self.evaluated = False
+
+        self.setRegisters([0.0 for _ in range(self.numRegs)])
+
+        # self.flowctrl = LGPFlowController()
+        # self.flowctrl.maxIterTimes = self.maxIterTimes
+
+        self.treelist = []
+
+        if outReg is None:
+            outReg = [0]
+
+        self.outputRegister = outReg.copy()
+        self.numOutputRegs = len(self.outputRegister)
+        self.tmp_numOutputRegs = self.numOutputRegs
+
+    def setRegisters(self, ind:int, value: float):
+        self.registers[ind] = value
+
+    def setRegisters(self, registers: list[float]):
+        if len(registers) != self.numRegs:
+            print(f"We are assigning multiple registers with inconsistent number to the original register number\n")
+            exit(1)
+        self.registers = registers.copy()
+
+    def resetRegisters(self, problem: Problem, value:float=0.0):
+        self.resetRegisters(problem, value)
+
+    def printTrees(self, state: EvolutionState)->str:
+        x = 0
+        res = ""
+        for x, tree in enumerate(self.treelist):
+            if not tree.status:
+                res += "//"
+            res += (f"Ins {x}:\t")
+            res += str(tree)
+
+        if self.towrap:
+            length = len(self.treelist)
+            for x, tree in enumerate(self.wraplist):
+                res += (f"Ins {x+length}:\t")
+                res += str(tree) + "\n"
+        
+        return res
+    
+    def printIndividualForHumans(self, state: 'EvolutionState')->str:
+        res = self.EVALUATED_PREAMBLE + ("true" if self.evaluated else "false") + "\n"
+        res += str( self.fitness ) + "\n"
+        res += self.printTrees(state)
+        cnteff = self.countStatus()
+        res += (f"# Effective instructions:\t{cnteff}\teffective %:\t{(cnteff / len(self.treelist)) * 100}\n")
+
+        return res
+
+    def getTreelist(self):
+        return self.treelist
+
+    def clone(self):
+        # a deep clone
+        myobj: LGPIndividual = super().clone()
+        myobj.treelist = []
+        for tree in self.getTreelist():
+            t = tree.clone()
+            t.owner = myobj
+            myobj.getTreelist().append(t)
+        myobj.copyLGPproperties(self)
+        return myobj
+
+    def copyLGPproperties(self, obj: 'LGPIndividual'):
+        self.numRegs = len(obj.getRegisters())
+        self.MaxNumTrees = obj.getMaxNumTrees()
+        self.MinNumTrees = obj.getMinNumTrees()
+        for i, v in enumerate(obj.getRegisters()):
+            self.setRegisters(i, v)
+
+        # self.flowctrl = LGPFlowController()
+        # self.maxIterTimes = obj.getFlowController().maxIterTimes
+        # self.flowctrl.maxIterTimes = self.maxIterTimes
+        # self.rateFlowOperator = obj.getrateFlowOperator()
+
+        self.wraplist = []
+        for tree in obj.getWrapper():
+            t = tree.clone()
+            t.owner = self
+            self.wraplist.append(t)
+
+        # self.tmp_numOutputRegs = obj.getCurNumOutputRegs()
+        # self.float_numOutputRegs = obj.isFloatingOutputs()
+
+    def lightClone(self):
+        myobj: LGPIndividual = super().clone()
+        myobj.treelist = []
+        for tree in self.getTreelist():
+            t = tree.lightClone()
+            t.owner = myobj
+            myobj.getTreelist().append(t)
+        myobj.copyLGPproperties(self)
+        return myobj
+
+    def size(self) -> int:
+        return sum(tree.child.numNodes(GPNode.NODESEARCH_ALL) for tree in self.getTreelist())
+    
+    def getTree(self, index: int) -> 'GPTree':
+        if index >= len(self.getTreelist()):
+            print(f"The tree index {index} is out of range")
+            exit(1)
+        return self.getTreelist()[index]
+    
+    def setTree(self, index: int, tree: 'GPTreeStruct') -> bool:
+        if index < len(self.getTreelist()):
+            self.getTreelist().pop(index)
+            treeStr: GPTreeStruct = tree if isinstance(tree, GPTreeStruct) else GPTreeStruct()
+            if not isinstance(tree, GPTreeStruct):
+                treeStr.assignfrom(tree)
+                treeStr.status = False
+                treeStr.effRegisters = set()
+            # treeStr.type = GPTreeStruct.ARITHMETIC
+            # if isinstance(treeStr.child.children[0], FlowOperator):
+            #     treeStr.type = GPTreeStruct.BRANCHING if isinstance(treeStr.child.children[0], Branching) else GPTreeStruct.ITERATION
+            self.getTreelist().insert(index, treeStr)
+            self.evaluated = False
+            self.updateStatus()
+            return True
+        print(f"setTree index: {index} is out of range {len(self.getTreelist())}")
+        return False
+
+    def addTree(self, index: int, tree: 'GPTree'):
+        treeStr = tree if isinstance(tree, GPTreeStruct) else GPTreeStruct()
+        if not isinstance(tree, GPTreeStruct):
+            treeStr.assignfrom(tree)
+            treeStr.status = False
+            treeStr.effRegisters = set()
+        # treeStr.type = GPTreeStruct.ARITHMETIC
+        # if isinstance(treeStr.child.children[0], FlowOperator):
+        #     treeStr.type = GPTreeStruct.BRANCHING if isinstance(treeStr.child.children[0], Branching) else GPTreeStruct.ITERATION
+        if index < 0:
+            index = 0
+        if index < len(self.getTreelist()):
+            self.getTreelist().insert(index, treeStr)
+        else:
+            self.getTreelist().append(treeStr)
+        self.evaluated = False
+        self.updateStatus()
+
+    def removeTree(self, index: int) -> bool:
+        if index < len(self.getTreelist()):
+            self.getTreelist().pop(index)
+            self.evaluated = False
+            self.updateStatus()
+            return True
+        print(f"removeTree index: {index} is out of range {len(self.getTreelist())}")
+        return False
+
+    def removeIneffectiveInstr(self) -> bool:
+        ii = 0
+        while ii < self.getTreesLength():
+            if not self.getTreeStruct(ii).status and self.getTreesLength() > self.getMinNumTrees():
+                self.removeTree(ii)
+            else:
+                ii += 1
+        return True
+
+    def getTreesLength(self) -> int:
+        return len(self.getTreelist())
+
+    def getEffTreesLength(self) -> int:
+        self.updateStatus()
+        return sum(1 for tree in self.getTreelist() if tree.status)
+
+    def getAvgNumEffFun(self) -> float:
+        self.updateStatus()
+        eff_trees = [tree for tree in self.getTreelist() if tree.status]
+        if not eff_trees:
+            return 0.0
+        total = sum(tree.child.numNodes(GPNode.NODESEARCH_NONTERMINALS) for tree in eff_trees)
+        return total / len(eff_trees)
+
+    def getAvgNumFun(self) -> float:
+        trees = self.getTreelist()
+        if not trees:
+            return 0.0
+        total = sum(tree.child.numNodes(GPNode.NODESEARCH_NONTERMINALS) for tree in trees)
+        return total / len(trees)
+
+    def getNumEffNode(self) -> float:
+        self.updateStatus()
+        return sum(
+            tree.child.numNodes(GPNode.NODESEARCH_ALL) -
+            tree.child.numNodes(GPNode.NODESEARCH_READREG) - 1
+            for tree in self.getTreelist() if tree.status
+        )
+
+    def getProgramSize(self) -> float:
+        return self.getNumEffNode()
+    
+    def updateStatus(self, n: Optional[int] = None, tar: Optional[List[int]] = None):
+        '''
+        identify which instructions are extrons and vise versa
+        start to update the status from position n
+        tar: the output register
+        '''
+        if n is None:
+            n = len(self.getTreelist())
+        if tar is None:
+            tar = self.getOutputRegisters()
+
+        if n > len(self.getTreelist()):
+            print("The n in updateStatus is larger than existing tree list")
+            exit(1)
+
+        statusArray = [False] * len(self.getTreelist())
+        sourceArray = [[False] * self.getNumRegs() for _ in self.getTreelist()]
+        destinationArray = [[False] * self.getNumRegs() for _ in self.getTreelist()]
+
+        targetRegister = set(tar)
+
+        # Move iterator to position n
+        treelist = self.getTreelist()
+        idx = n - 1
+
+        while idx >= 0:
+            tree = treelist[idx]
+            tree.effRegisters = set(targetRegister)
+
+            # if isinstance(tree.child.children[0], Branching):
+            #     tree.type = GPTreeStruct.BRANCHING
+            #     tree.status = statusArray[idx] = False
+            #     start = idx + 1
+            #     end = min(len(treelist), idx + 1 + tree.child.children[0].getBodyLength())
+
+            #     # Check if body has effective instructions
+            #     for i in range(start, end):
+            #         if statusArray[i]:
+            #             tree.status = statusArray[idx] = True
+            #             break
+
+            #     # Determine body end (including nested blocks)
+            #     bodyend = tree.child.children[0].getBodyLength() + idx
+            #     for i in range(idx + 1, min(len(treelist), bodyend + 1)):
+            #         if isinstance(treelist[i].child.children[0], FlowOperator):
+            #             bodyend = max(bodyend, i + treelist[i].child.children[0].getBodyLength())
+
+            #     effi = bodyend + 1
+            #     if effi >= len(treelist):
+            #         targetRegister.update(tar)
+            #     else:
+            #         targetRegister.update(treelist[effi].effRegisters)
+            #         if statusArray[effi] and treelist[effi].type == GPTreeStruct.ARITHMETIC:
+            #             targetRegister.discard(treelist[effi].child.getIndex())
+            #             treelist[effi].updateEffRegister(targetRegister)
+
+            #     tree.effRegisters.update(targetRegister)
+
+            #     if statusArray[idx]:
+            #         tree.updateEffRegister(targetRegister)
+            #     self.collectReadRegister(tree.child, sourceArray[idx])
+
+            # elif isinstance(tree.child.children[0], Iteration):
+            #     tree.type = GPTreeStruct.ITERATION
+            #     source, destination = set(), set()
+            #     effective_block_exist = False
+
+            #     for i in range(idx + 1, len(treelist)):
+            #         if i > idx + tree.child.children[0].getBodyLength():
+            #             break
+            #         if statusArray[i]:
+            #             if isinstance(treelist[i].child.children[0], FlowOperator):
+            #                 effective_block_exist = True
+            #                 i += treelist[i].child.children[0].getBodyLength() - 1
+            #             else:
+            #                 for r in range(self.getNumRegs()):
+            #                     if sourceArray[i][r]:
+            #                         source.add(r)
+            #                     if destinationArray[i][r]:
+            #                         destination.add(r)
+
+            #     source &= destination  # Intersection
+
+            #     bodyend = tree.child.children[0].getBodyLength() + idx
+            #     for i in range(idx + 1, min(len(treelist), bodyend + 1)):
+            #         if isinstance(treelist[i].child.children[0], FlowOperator):
+            #             bodyend = max(bodyend, i + treelist[i].child.children[0].getBodyLength())
+
+            #     effi = bodyend + 1
+            #     if effi >= len(treelist):
+            #         targetRegister.update(tar)
+            #     else:
+            #         targetRegister.update(treelist[effi].effRegisters)
+            #         if statusArray[effi] and treelist[effi].type == GPTreeStruct.ARITHMETIC:
+            #             targetRegister.discard(treelist[effi].child.getIndex())
+            #             treelist[effi].updateEffRegister(targetRegister)
+
+            #     tree.effRegisters.update(targetRegister)
+
+            #     if source or effective_block_exist:
+            #         tree.status = statusArray[idx] = True
+            #         tree.updateEffRegister(targetRegister)
+            #     else:
+            #         tree.status = statusArray[idx] = False
+
+            #     self.collectReadRegister(tree.child, sourceArray[idx])
+
+            # else:
+            #     tree.type = GPTreeStruct.ARITHMETIC
+            #     index = tree.child.getIndex()
+            #     if index in targetRegister:
+            #         tree.status = statusArray[idx] = True
+            #         targetRegister.discard(index)
+            #         tree.updateEffRegister(targetRegister)
+            #     else:
+            #         tree.status = statusArray[idx] = False
+
+            #     destinationArray[idx][index] = True
+            #     self.collectReadRegister(tree.child, sourceArray[idx])
+
+            tree.type = GPTreeStruct.ARITHMETIC
+            index = tree.child.getIndex()
+            if index in targetRegister:
+                tree.status = statusArray[idx] = True
+                targetRegister.discard(index)
+                tree.updateEffRegister(targetRegister)
+            else:
+                tree.status = statusArray[idx] = False
+
+            destinationArray[idx][index] = True
+            self.collectReadRegister(tree.child, sourceArray[idx])
+            idx -= 1
+
+    def countStatus(self, start: int=0, end: int=None) -> int:
+        if end is None:
+            end = self.getTreesLength
+        return sum(1 for tree in self.getTreelist()[start:end] if tree.status)
+    
+    # def canAddFlowOperator(self) -> bool:
+    #     cnt = sum(1 for tree in self.getTreelist() if isinstance(tree.child.children[0], FlowOperator))
+    #     return cnt / len(self.getTreelist()) <= self.rateFlowOperator
+
+    def collectReadRegister(self, node: GPNode, collect: List[bool]):
+        if isinstance(node, ReadRegisterGPNode):
+            collect[node.getIndex()] = True
+        else:
+            for child in node.children:
+                self.collectReadRegister(child, collect)
+
+    def makeGraphvizRule(self) -> str:
+        return self.makeGraphvizRule(list(self.getOutputRegisters()))
+
+    def wrapper(self, predict_list: List[np.ndarray], target_list: List[np.ndarray], state, thread, problem):
+        MAX_SAMPLE = self.wrap_max_sample
+
+        num_outputs = target_list[0].shape[0]
+        sample_size = min(len(predict_list), MAX_SAMPLE)
+        num_features = predict_list[0].shape[0]
+
+        predict = np.zeros((sample_size, num_features))
+        target = np.zeros(sample_size)
+        indices = np.zeros(sample_size, dtype=int)
+
+        if len(predict_list) > MAX_SAMPLE:
+            for s in range(MAX_SAMPLE):
+                ind = state.random[thread].randint(len(predict_list))
+                indices[s] = ind
+                predict[s] = predict_list[ind]
+        else:
+            for i in range(sample_size):
+                indices[i] = i
+                predict[i] = predict_list[i]
+
+        self.wraplist.clear()
+
+        for tar in range(num_outputs):
+            # Build target vector
+            for i in range(sample_size):
+                target[i] = target_list[indices[i]][tar]
+
+            lr = LinearRegression()
+            lr.fit(predict, target)
+
+            W = np.concatenate(([lr.intercept_], lr.coef_))
+
+            self.weight_norm = 0
+            if self.normalize_wrap:
+                self.weight_norm = np.sqrt(np.sum(np.abs(W[1:])) / len(W)) * self.normalize_f
+
+            instr = self.constructInstr(self.outputRegister[tar], W)
+            self.wraplist.append(instr)
+
+            # Update predict_list in-place
+            for i in range(len(target_list)):
+                tmp = W[0] + np.dot(W[1:], predict_list[i])
+                tmp = max(min(tmp, 1e6), -1e6)
+                predict_list[i][tar] = tmp
+
+        # Return a new list of updated predictions
+        newpred = [np.array(predict_list[i].copy()) for i in range(len(target_list))]
+        return newpred

@@ -1,21 +1,35 @@
 from src.ec.gp_tree import GPTree
 from src.ec.gp_defaults import GPDefaults
 from src.ec.gp_node import GPNode
+from src.ec.evolution_state import EvolutionState
+from src.ec.gp_data import GPData
+# from src.ec.fitness import Fitness
 # from copy import deepcopy
 
-class GPIndividual:
+from tasks.problem import Problem
+
+from abc import ABC, abstractmethod
+
+class GPIndividual(ABC):
     '''A simple GP individual with only one tree'''
     P_NUMTREES = "numtrees"
     P_TREE = "tree"
     P_INDIVIDUAL = "individual"
     EVALUATED_PREAMBLE = "Evaluated: "
+    
+    P_TOWRAP = "to-wrap"
+    P_BATCHSIZE = "batch-size"
 
     def __init__(self):
-        self.treelist:[GPTree] = []*1  # storing all the tree in this individual
+        self.treelist:list[GPTree] = []*1  # storing all the tree in this individual
         self.evaluated = False  # evaluated or not
         self.fitness = None  
         self.species = None   # the species that this individual belongs to
         self.breedingPipe = None   # the pipeline that produces this individuals
+        
+        self.towrap = False  # to wrap the output or not
+        self.batchsize = 1   # the batch size in training
+
 
     @classmethod
     def default_base(cls):
@@ -27,7 +41,7 @@ class GPIndividual:
     def equals(self, ind:'GPIndividual'):
         if ind is None:
             return False
-        if not isinstance(ind, GPIndividual):
+        if not isinstance(ind, self.__class__):
             return False
         if len(self.treelist) != len(ind.treelist):
             return False
@@ -84,6 +98,9 @@ class GPIndividual:
         myobj = self.__class__()
         myobj.fitness = self.fitness.clone() if self.fitness is not None else None
         myobj.treelist = [tree.clone() for tree in self.treelist]
+        myobj.towrap = self.towrap
+        myobj.batchsize = self.batchsize
+        myobj.breedingPipe = None # None because this individual is produced by clone() rather than breeding pipeline
         for tree in myobj.treelist:
             tree.owner = myobj
         myobj.evaluated = self.evaluated
@@ -93,7 +110,10 @@ class GPIndividual:
         myobj = self.__class__()
         myobj.fitness = self.fitness.clone() if self.fitness is not None else None
         myobj.treelist = [tree.lightClone() for tree in self.treelist]
-        for tree in myobj.trees:
+        myobj.towrap = self.towrap
+        myobj.batchsize = self.batchsize
+        myobj.breedingPipe = None # None because this individual is produced by clone() rather than breeding pipeline
+        for tree in myobj.treelist:
             tree.owner = myobj
         myobj.evaluated = self.evaluated
         return myobj
@@ -107,7 +127,7 @@ class GPIndividual:
     def getTree(self, index:int)->GPTree:
         return self.treelist[index]
     
-    def getTrees(self)->[GPTree]:
+    def getTrees(self)->list[GPTree]:
         return self.treelist
     
     def setTree(self, index:int, tree:GPTree)->bool:
@@ -120,6 +140,37 @@ class GPIndividual:
         
     def getTreesLength(self)->int:
         return len(self.treelist)
+    
+    @abstractmethod
+    def rebuildIndividual(self, state: EvolutionState, thread: int):
+        pass
+
+    @abstractmethod
+    def execute(state:EvolutionState, thread:int, input:GPData, individual:'GPIndividual', problem:Problem):
+        pass
+
+    @abstractmethod
+    def preExecution(state:EvolutionState, thread:int):
+        pass
+
+    @abstractmethod
+    def postExecution(state:EvolutionState, thread:int):
+        pass
+
+    @abstractmethod
+    def makeGraphvizRule(outputRegs:list[int])->str:
+        pass
+    
+    @abstractmethod
+    def wrapper(predict_list:list[list[float]], target_list:list[list[float]], state:EvolutionState, thread:int, problem:Problem):
+        pass
+
+    def IsWrap(self)->bool:
+        return self.towrap
+    
+    @abstractmethod
+    def getWrapper(self):
+        pass
     
 
 if __name__ == "__main__":

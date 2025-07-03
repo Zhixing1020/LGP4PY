@@ -1,7 +1,7 @@
 
 from src.ec import *
 from src.ec.util import *
-from tasks import Problem
+from tasks.problem import Problem
 # from src.ec.gp_node import GPNode
 
 # from src.lgp.individual.lgp_individual import LGPIndividual

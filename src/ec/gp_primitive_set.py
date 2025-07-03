@@ -79,18 +79,20 @@ class GPPrimitiveSet:
             #     self.nodes_by_name[gpfi.name()].append(gpfi)
 
         for node in self.nodes:
+            
             if node.expectedChildren() == 0:
                 self.terminals.append(node)
-                if isinstance(node, ReadRegisterGPNode):
-                    self.registers.append(node)
-                else:
-                    self.nonregisters.append(node)
-            else:
+            elif not isinstance(node, WriteRegisterGPNode):
                 self.nonterminals.append(node)
 
-            if isinstance(node, InputFeatureGPNode) or isinstance(node, ConstantGPNode):
+            if isinstance(node, WriteRegisterGPNode):
+                self.registers.append(node)
+            else:
+                self.nonregisters.append(node)
+                
+            if node.expectedChildren() == 0 and not isinstance(node, ReadRegisterGPNode):
                 self.constants.append(node)
-            elif node.expectedChildren() == 0:
+            elif isinstance(node, ReadRegisterGPNode):
                 self.nonconstants.append(node)
 
             if isinstance(node, FlowOperator):

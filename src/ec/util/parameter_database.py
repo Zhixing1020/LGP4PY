@@ -43,6 +43,11 @@ class ParameterDatabase:
         else:
             raise SystemExit(f"Fatal error: cannot find the parameter either {param} or {default_param}")
 
+    def getIntWithDefault(self, param:Parameter, default_param:Parameter, default_val)->int:
+
+        val = self.getParamValue(param, default_param)
+        return int(val) if val is not None else default_val
+    
     def getDoubleWithDefault(self, param:Parameter, default_param:Parameter, default_val)->float:
 
         val = self.getParamValue(param, default_param)

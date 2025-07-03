@@ -9,7 +9,7 @@ from src.ec.gp_defaults import GPDefaults
 from src.ec.gp_data import GPData
 from src.ec.gp_node_parent import GPNodeParent
 
-from tasks import Problem
+from tasks.problem import Problem
 
 # import copy
 

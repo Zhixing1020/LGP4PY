@@ -10,7 +10,7 @@ from src.ec.selection_method import SelectionMethod
 
 import random
 
-class BreedingPipeline(ABC, BreedingSource):
+class BreedingPipeline(BreedingSource):
     '''
     BreedingPipeline is a concrete subclass of BreedingSource that performs genetic operations like crossover, mutation, or reproduction. 
     It takes input from one or more other BreedingSources (often SelectionMethods), applies a genetic operator, and outputs individuals.

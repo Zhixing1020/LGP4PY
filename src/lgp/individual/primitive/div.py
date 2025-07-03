@@ -1,5 +1,5 @@
 from src.ec import *
-from tasks import Problem
+from tasks.problem import Problem
 from typing import override
 
 import math

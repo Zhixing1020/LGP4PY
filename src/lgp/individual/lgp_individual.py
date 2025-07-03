@@ -1,4 +1,5 @@
 from src.ec import *
+from src.ec.util import *
 # from src.ec.gp_individual import GPIndividual
     
 from abc import ABC, abstractmethod
@@ -7,7 +8,7 @@ from typing import List, Optional, Set
 from tasks.problem import Problem
 from src.lgp.individual.gp_tree_struct import GPTreeStruct
 from src.lgp.individual.primitive import *
-from src.lgp.util.linear_regression import LinearRegression
+# from src.lgp.util.linear_regression import LinearRegression
 
 import numpy as np
 from sklearn.linear_model import LinearRegression
@@ -50,6 +51,131 @@ class LGPIndividual(ABC, GPIndividual):
         # self.init_ConReg = []
         # self.initReg_values = []
         # self.constraintsNum = 0
+
+    def setup(self, state: EvolutionState, base: Parameter):
+        super().setup(state, base)
+        def_base = self.defaultBase()
+
+        self.evaluated = False
+
+        # wrapper
+        self.towrap = state.parameters.getBoolean(base.push(self.P_TOWRAP), def_base.push(self.P_TOWRAP), False)
+        self.wraplist = []
+        self.batchsize = state.parameters.getInt(base.push(self.P_BATCHSIZE), def_base.push(self.P_BATCHSIZE))
+        if self.batchsize < 1:
+            state.output.fatal("The wrap_max_sample must be larger than 1.",
+                            base.push(self.P_BATCHSIZE), def_base.push(self.P_BATCHSIZE))
+
+        # self.float_numOutputRegs = state.parameters.getBoolean(base.push(self.P_FLOATOUTPUT), def_base.push(self.P_FLOATOUTPUT), False)
+        # self.normalize_wrap = state.parameters.getBoolean(base.push(self.P_NORMWRAP), def_base.push(self.P_NORMWRAP), False)
+        # self.normalize_f = state.parameters.getDoubleWithDefault(base.push(self.P_NORMWRAP_F), def_base.push(self.P_NORMWRAP_F), 1e-3)
+
+        self.MaxNumTrees = state.parameters.getInt(base.push(self.P_MAXNUMTREES), def_base.push(self.P_MAXNUMTREES))
+        if self.MaxNumTrees <= 0:
+            state.output.fatal("An LGPIndividual must have at least one tree.",
+                            base.push(self.P_MAXNUMTREES), def_base.push(self.P_MAXNUMTREES))
+
+        self.MinNumTrees = state.parameters.getInt(base.push(self.P_MINNUMTREES), def_base.push(self.P_MINNUMTREES))
+        if self.MinNumTrees <= 0:
+            state.output.fatal("An LGPIndividual must have at least one tree.",
+                            base.push(self.P_MINNUMTREES), def_base.push(self.P_MINNUMTREES))
+
+        self.initMaxNumTrees = state.parameters.getInt(base.push(self.P_INITMAXNUMTREES), def_base.push(self.P_INITMAXNUMTREES))
+        if self.initMaxNumTrees <= 0:
+            state.output.fatal("An LGPIndividual must have at least one tree.",
+                            base.push(self.P_INITMAXNUMTREES), def_base.push(self.P_INITMAXNUMTREES))
+
+        self.initMinNumTrees = state.parameters.getInt(base.push(self.P_INITMINNUMTREES), def_base.push(self.P_INITMINNUMTREES))
+        if self.initMinNumTrees <= 0:
+            state.output.fatal("An LGPIndividual must have at least one tree.",
+                            base.push(self.P_INITMINNUMTREES), def_base.push(self.P_INITMINNUMTREES))
+        if self.initMinNumTrees > self.initMaxNumTrees or self.initMinNumTrees < self.MinNumTrees:
+            state.output.fatal("The initMinNumTrees must be >= MinNumTrees and <= initMaxNumTrees.")
+
+        self.numRegs = state.parameters.getInt(base.push(self.P_NUMREGISTERS), def_base.push(self.P_NUMREGISTERS))
+        if self.getNumRegs() <= 0:
+            state.output.fatal("An LGPIndividual must have at least one register.",
+                            base.push(self.P_NUMREGISTERS), def_base.push(self.P_NUMREGISTERS))
+
+        # self.rateFlowOperator = state.parameters.getDoubleWithDefault(base.push(self.P_RATEFLOWOPERATOR), def_base.push(self.P_RATEFLOWOPERATOR), 0.)
+        # if not (0 <= self.rateFlowOperator <= 1):
+        #     state.output.fatal("The rate of flow operator must be >=0 and <=1.",
+        #                     base.push(self.P_RATEFLOWOPERATOR), def_base.push(self.P_RATEFLOWOPERATOR))
+
+        # self.maxIterTimes = state.parameters.getIntWithDefault(base.push(self.P_MAXITERTIMES), def_base.push(self.P_MAXITERTIMES), 100)
+        # if self.maxIterTimes <= 0:
+        #     state.output.fatal("max iteration times must be >=1",
+        #                     base.push(self.P_MAXITERTIMES), def_base.push(self.P_MAXITERTIMES))
+
+        self.eff_initialize = state.parameters.getBoolean(base.push(self.P_EFFECTIVE_INITIAL), def_base.push(self.P_EFFECTIVE_INITIAL), False)
+
+        self.numOutputRegs = state.parameters.getIntWithDefault(base.push(self.P_NUMOUTPUTREGISTERS), def_base.push(self.P_NUMOUTPUTREGISTERS), 1)
+        if self.numOutputRegs <= 0:
+            state.output.fatal("An LGPIndividual must have at least one output register.",
+                            base.push(self.P_NUMOUTPUTREGISTERS), def_base.push(self.P_NUMOUTPUTREGISTERS))
+
+        self.outputRegister = [r for r in range(self.numOutputRegs)]
+        # self.tmp_numOutputRegs = self.numOutputRegs
+
+        self.treelist = []
+        self.exec_trees = []
+
+        for x in range(self.MaxNumTrees):
+            p = base.push(self.P_TREE).push("0")
+            self.privateParameter = p
+            t: GPTreeStruct = state.parameters.getInstanceForParameter(
+                p, def_base.push(self.P_TREE).push("0"), GPTreeStruct)
+            t.owner = self
+            t.status = False
+            t.effRegisters = set()
+            t.setup(state, p)
+            self.treelist.append(t)
+
+        self.setRegisters([0.0] * self.getNumRegs())
+
+        # self.flowctrl = LGPFlowController()
+        # self.getFlowctrl().maxIterTimes = self.maxIterTimes
+
+        # x = 0
+        # for tree in self.getTreelist():
+        #     for w in range(len(tree.constraints(initializer).functionset.nodes)):
+        #         gpfi = tree.constraints(initializer).functionset.nodes[w]
+        #         for y in range(len(gpfi)):
+        #             gpfi[y].checkConstraints(state, x, self, base)
+        #             x += 1
+
+
+    def rebuildIndividual(self, state, thread):
+        numtrees = state.random[thread].randint(self.initMinNumTrees, self.initMaxNumTrees)
+
+        self.treelist.clear()
+
+        for _ in range(numtrees):
+            tree = state.parameters.getInstanceForParameter(
+                self.privateParameter,
+                self.defaultBase().push(self.P_TREE).push("0"),
+                GPTreeStruct
+            )
+            tree.buildTree(state, thread)
+            self.treelist.append(tree)
+
+        self.updateStatus()
+
+        if self.eff_initialize:
+            self.removeIneffectiveInstr()
+            trial = 100 * self.initMaxNumTrees
+            while self.countStatus() < numtrees and trial > 0:
+                tree = state.parameters.getInstanceForParameter(
+                    self.privateParameter,
+                    self.defaultBase().push(self.P_TREE).push("0"),
+                    GPTreeStruct
+                )
+                tree.buildTree(state, thread)
+                self.setTree(0, tree)
+                self.updateStatus()
+                self.removeIneffectiveInstr()
+                trial -= 1
+
 
     def getRegisters(self):
         return self.registers

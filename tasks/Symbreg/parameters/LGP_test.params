@@ -43,7 +43,7 @@ breed.elite.0 = 5
 
 # GP population parameters
 pop.subpop.0.species = src.ec.GPSpecies
-pop.subpop.0.species.ind = src.ec.GPIndividual
+pop.subpop.0.species.ind = tasks.Symbreg.individual.LGPIndividual4SR
 pop.subpop.0.species.ind.maxnumtrees = 100
 pop.subpop.0.species.ind.minnumtrees = 1
 pop.subpop.0.species.ind.init_maxnumtrees = 20
@@ -54,9 +54,9 @@ pop.subpop.0.species.ind.max_itertimes = 100
 pop.subpop.0.species.ind.effective_initial = true
 #SimpleGPTree
 #pop.subpop.0.species.ind.tree.0 = zhixing.cpxInd.individual.GPTreeStruct
-pop.subpop.0.species.ind.tree.0 = src.ec.GPTree
+pop.subpop.0.species.ind.tree.0 = src.lgp.individual.GPTreeStruct
 pop.subpop.0.species.ind.tree.0.tc = tc0
-pop.subpop.0.species.ind.num-output-register = 1
+pop.subpop.0.species.ind.num-output-register = 2
 pop.subpop.0.species.ind.output-register.0 = 0
 pop.subpop.0.species.ind.output-register.1 = 1
 pop.subpop.0.species.ind.output-register.2 = 2
@@ -67,6 +67,7 @@ pop.subpop.0.species.ind.output-register.6 = 6
 pop.subpop.0.species.ind.output-register.7 = 7
 
 pop.subpop.0.species.ind.to-wrap = true
+pop.subpop.0.species.ind.batch-size=100
 
 #LGP specific parameters
 #numregisters = 4

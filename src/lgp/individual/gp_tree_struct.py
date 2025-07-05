@@ -1,4 +1,7 @@
-from src.ec import *
+from src.ec.gp_tree import GPTree
+from src.ec.gp_node import GPNode
+from src.ec.evolution_state import EvolutionState
+from tasks.problem import Problem
 
 from typing import Set, List
 # from copy import deepcopy

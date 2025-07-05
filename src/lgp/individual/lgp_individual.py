@@ -1,9 +1,9 @@
 from src.ec import *
 from src.ec.util import *
-# from src.ec.gp_individual import GPIndividual
+from src.ec.gp_individual import GPIndividual
     
 from abc import ABC, abstractmethod
-from typing import List, Optional, Set
+from typing import List, Optional, Set, override
 
 from tasks.problem import Problem
 from src.lgp.individual.gp_tree_struct import GPTreeStruct
@@ -13,7 +13,7 @@ from src.lgp.individual.primitive import *
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
-class LGPIndividual(ABC, GPIndividual):
+class LGPIndividual(GPIndividual):
     P_NUMREGISTERS = "numregisters"
     P_MAXNUMTREES = "maxnumtrees"
     P_MINNUMTREES = "minnumtrees"
@@ -176,6 +176,43 @@ class LGPIndividual(ABC, GPIndividual):
                 self.removeIneffectiveInstr()
                 trial -= 1
 
+    @override
+    def execute(self, state, thread, input, individual, problem):
+        # check if the individual is evaluated
+        if self.evaluated:
+            return  self.getRegisters[self.getOutputRegisters()] 
+        
+        # reset the registers
+        self.resetRegisters(problem, 0.0)
+
+        # check if the individual can be fast executed
+        if self.fastFlag != 1:
+            # normal execution and take consider the flow control
+            # reset the flow controller
+            # self.getFlowctrl().reset()
+            pass
+
+        for instr in self.exec_trees:
+            instr.child.eval(state, thread, input, individual, problem)
+
+        if self.IsWrap():
+            # if the individual is wrapped, we need to execute the wrapper
+            for instr in self.wraplist:
+                instr.child.eval(state, thread, input, individual, problem)
+
+        return self.getRegisters[self.getOutputRegisters()] 
+    
+    @override
+    def preExecution(self, state:EvolutionState, thread:int):
+        
+        # extract the executable trees
+        self.exec_trees.clear()
+        for tree in self.getTreelist():
+            if tree.status:
+                self.exec_trees.append(tree)
+
+        # set the fastFlag to 1 if the individual is fast executable (i.e., no flow control)
+        self.fastFlag = all(tree.type == GPTreeStruct.ARITHMETIC for tree in self.exec_trees)
 
     def getRegisters(self):
         return self.registers
@@ -242,7 +279,7 @@ class LGPIndividual(ABC, GPIndividual):
         self.registers = registers.copy()
 
     def resetRegisters(self, problem: Problem, value:float=0.0):
-        self.resetRegisters(problem, value)
+        self.setRegisters(problem, [value]*self.getNumRegs())
 
     def printTrees(self, state: EvolutionState)->str:
         x = 0

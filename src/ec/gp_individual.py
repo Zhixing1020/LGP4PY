@@ -32,7 +32,7 @@ class GPIndividual(ABC):
 
 
     @classmethod
-    def default_base(cls):
+    def defaultBase(cls):
         return GPDefaults.base().push(cls.P_INDIVIDUAL)
 
     def __eq__(self, other):
@@ -49,7 +49,7 @@ class GPIndividual(ABC):
     
     def setup(self, state, base):
 
-        def_base = self.default_base()
+        def_base = self.defaultBase()
         self.evaluated = False
 
         # t = state.parameters.getInt(base.push(self.P_NUMTREES), def_base.push(self.P_NUMTREES), 1)
@@ -146,23 +146,23 @@ class GPIndividual(ABC):
         pass
 
     @abstractmethod
-    def execute(state:EvolutionState, thread:int, input:GPData, individual:'GPIndividual', problem:Problem):
+    def execute(self, state:EvolutionState, thread:int, input:GPData, individual:'GPIndividual', problem:Problem):
         pass
 
     @abstractmethod
-    def preExecution(state:EvolutionState, thread:int):
+    def preExecution(self, state:EvolutionState, thread:int):
         pass
 
     @abstractmethod
-    def postExecution(state:EvolutionState, thread:int):
+    def postExecution(self, state:EvolutionState, thread:int):
         pass
 
     @abstractmethod
-    def makeGraphvizRule(outputRegs:list[int])->str:
+    def makeGraphvizRule(self, outputRegs:list[int])->str:
         pass
     
     @abstractmethod
-    def wrapper(predict_list:list[list[float]], target_list:list[list[float]], state:EvolutionState, thread:int, problem:Problem):
+    def wrapper(self, predict_list:list[list[float]], target_list:list[list[float]], state:EvolutionState, thread:int, problem:Problem):
         pass
 
     def IsWrap(self)->bool:

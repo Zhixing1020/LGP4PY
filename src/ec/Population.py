@@ -24,7 +24,7 @@ class Population:
 
         from src.ec.subpopulation import Subpopulation
 
-        self.subpops = [Subpopulation] * size
+        self.subpops = [None] * size
 
         for x in range(size):
             pp = base.push(self.P_SUBPOP).push(""+str(x))
@@ -40,9 +40,9 @@ class Population:
             subpop.populate(state, thread)
 
     def emptyclone(self)->'Population':
-        from src.ec.subpopulation import Subpopulation
+        # from src.ec.subpopulation import Subpopulation
         pop = self.__class__()
-        pop.subpops = [Subpopulation] * len(self.subpops)
+        pop.subpops = [None] * len(self.subpops)
 
         for i, p in enumerate(self.subpops):
             pop.subpops[i] = p.emptyclone()

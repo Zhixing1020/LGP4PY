@@ -31,15 +31,16 @@ class GPSpecies(ABC):
         self.clone()
 
     def newIndividual(self, state: EvolutionState, thread: int) -> GPIndividual:
-        newind = self.i_prototype.clone()
-
-        # Initialize the trees
-        for tree in newind.treelist:
-            tree.buildTree(state, thread)
+        newind = self.i_prototype.lightClone()
 
         newind.fitness = self.f_prototype.clone()
         newind.evaluated = False
         newind.species = self
+
+        # Initialize the trees
+        # for tree in newind.treelist:
+        #     tree.buildTree(state, thread)
+        newind.rebuildIndividual(state, thread)
         return newind
 
     def setup(self, state: EvolutionState, base: Parameter):

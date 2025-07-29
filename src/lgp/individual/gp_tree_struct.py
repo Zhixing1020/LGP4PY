@@ -17,6 +17,11 @@ class GPTreeStruct(GPTree):
         self.effRegisters: Set[int] = set()
         self.type: int = GPTreeStruct.ARITHMETIC  # default: ARITHMETIC
 
+    def __repr__(self):
+        address = hex(id(self))
+        return f"{str(self)}<GPTreeStruct {address} status={self.status}>"
+
+
     def updateEffRegister(self, s: Set[int]):
         self.child.collectReadRegister(s)
 

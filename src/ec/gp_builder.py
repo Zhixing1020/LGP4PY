@@ -175,7 +175,7 @@ class GPBuilder:
         # filter feasible functions
         nodes_to_pick = []
         for cand in nonregisters: # we first force to pick a function
-            if all(cand == c for c in terminals):
+            if all( cand != c for c in terminals):
                 nodes_to_pick.append(cand.lightClone())
 
         if not nodes_to_pick:

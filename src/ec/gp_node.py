@@ -94,7 +94,7 @@ class GPNode(GPNodeParent):
         if length == 0:
             self.children = []
         else:
-            self.children = [GPNode] * length  # or a list of GPNode()
+            self.children = [None] * length  # or a list of GPNode()
 
         self.parent = None
 
@@ -200,7 +200,7 @@ class GPNode(GPNodeParent):
         if len(self.children) == 0:
             obj.children = self.children  # share array (assumed to be reused zeroChildren)
         else:
-            obj.children = [GPNode] * len(self.children)
+            obj.children = [None] * len(self.children)
         obj.parent = None # the parent and argposition are set to None (or initial values) to imply a new node
         obj.argposition = -1
         return obj

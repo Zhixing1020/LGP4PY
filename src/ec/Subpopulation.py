@@ -74,7 +74,7 @@ class Subpopulation:
         for i in range(start, len(self.individuals)):
             for _ in range(self.numDuplicateRetries + 1):
                 ind = self.species.newIndividual(state, thread)
-                if self.duplicateSet is None or ind.printTrees() not in self.duplicateSet:
+                if self.duplicateSet is None or ind.printTrees(state) not in self.duplicateSet:
                     self.individuals[i] = ind
                     if self.duplicateSet is not None and ind.printTrees() not in self.duplicateSet:
                         self.duplicateSet.add(ind.printTrees())

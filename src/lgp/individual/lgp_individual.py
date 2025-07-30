@@ -151,11 +151,12 @@ class LGPIndividual(GPIndividual):
         self.treelist.clear()
 
         for _ in range(numtrees):
-            tree = state.parameters.getInstanceForParameter(
-                self.privateParameter,
-                self.defaultBase().push(self.P_TREE).push("0"),
-                GPTreeStruct
-            )
+            tree = self.species.instr_prototype.lightClone()
+            # tree = state.parameters.getInstanceForParameter(
+            #     self.privateParameter,
+            #     self.defaultBase().push(self.P_TREE).push("0"),
+            #     GPTreeStruct
+            # )
             tree.buildTree(state, thread)
             self.treelist.append(tree)
 
@@ -165,13 +166,14 @@ class LGPIndividual(GPIndividual):
             self.removeIneffectiveInstr()
             trial = 100 * self.initMaxNumTrees
             while self.countStatus() < numtrees and trial > 0:
-                tree = state.parameters.getInstanceForParameter(
-                    self.privateParameter,
-                    self.defaultBase().push(self.P_TREE).push("0"),
-                    GPTreeStruct
-                )
+                tree = self.species.instr_prototype.lightClone()
+                # tree = state.parameters.getInstanceForParameter(
+                #     self.privateParameter,
+                #     self.defaultBase().push(self.P_TREE).push("0"),
+                #     GPTreeStruct
+                # )
                 tree.buildTree(state, thread)
-                self.setTree(0, tree)
+                self.addTree(0, tree)
                 self.updateStatus()
                 self.removeIneffectiveInstr()
                 trial -= 1
@@ -281,7 +283,7 @@ class LGPIndividual(GPIndividual):
     def resetRegisters(self, problem: Problem, value:float=0.0):
         self.setRegisters(problem, [value]*self.getNumRegs())
 
-    def printTrees(self, state: EvolutionState)->str:
+    def printTrees(self, state: EvolutionState=None)->str:
         x = 0
         res = ""
         for x, tree in enumerate(self.treelist):
@@ -325,6 +327,14 @@ class LGPIndividual(GPIndividual):
         self.numRegs = len(obj.getRegisters())
         self.MaxNumTrees = obj.getMaxNumTrees()
         self.MinNumTrees = obj.getMinNumTrees()
+        self.initMaxNumTrees = obj.getInitMaxNumTrees()
+        self.initMinNumTrees = obj.getInitMinNumTrees()
+        self.numOutputRegs = obj.getNumOutputRegs()
+        self.outputRegister = obj.getOutputRegisters().copy()
+        self.numOutputRegs = obj.getNumOutputRegs()
+        self.towrap = obj.towrap
+        self.batchsize = obj.batchsize
+        self.eff_initialize = obj.eff_initialize
         self.setRegisters(obj.getRegisters())
 
         # self.flowctrl = LGPFlowController()
@@ -408,7 +418,7 @@ class LGPIndividual(GPIndividual):
     def removeIneffectiveInstr(self) -> bool:
         ii = 0
         while ii < self.getTreesLength():
-            if not self.getTreeStruct(ii).status and self.getTreesLength() > self.getMinNumTrees():
+            if not self.getTree(ii).status and self.getTreesLength() > self.getMinNumTrees():
                 self.removeTree(ii)
             else:
                 ii += 1
@@ -582,7 +592,7 @@ class LGPIndividual(GPIndividual):
 
     def countStatus(self, start: int=0, end: int=None) -> int:
         if end is None:
-            end = self.getTreesLength
+            end = self.getTreesLength()
         return sum(1 for tree in self.getTreelist()[start:end] if tree.status)
     
     # def canAddFlowOperator(self) -> bool:

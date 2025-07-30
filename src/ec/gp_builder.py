@@ -231,13 +231,23 @@ class GPBuilder:
             state.output.warn(f"There is No terminals")
 
         nodes_to_pick = []
-        for cand in nonregisters:
-            if all( cand != c for c in constants) or self.can_add_constant(parent):
-                #if it is not a constant or we can add a constant, we can pick it
-                nodes_to_pick.append(cand.lightClone())
 
-        if not nodes_to_pick:
-            state.output.fatal("No nonregisters available in grow_node_reg")
+        if current == 1:
+            for cand in nonregisters: # we first force to pick a function
+                if all( cand != c for c in terminals):
+                    nodes_to_pick.append(cand.lightClone())
+
+            if not nodes_to_pick:
+                state.output.warning("No functions available in grow_node_reg, so we can only pick terminals")
+                nodes_to_pick = terminals
+        else:
+            for cand in nonregisters:
+                if all( cand != c for c in constants) or self.can_add_constant(parent):
+                    #if it is not a constant or we can add a constant, we can pick it
+                    nodes_to_pick.append(cand.lightClone())
+
+            if not nodes_to_pick:
+                state.output.fatal("No nonregisters available in grow_node_reg")
 
         n = state.random[thread].choice(nodes_to_pick)
         n.resetNode(state, thread)

@@ -7,7 +7,7 @@ class BreedingSource(ABC):
     '''
     BreedingSource is an abstract superclass that defines a common interface for all components that can produce individuals for the next generation.
     BreedingSource is the general blueprint for any object that can "breed" or "supply" individuals — including both selection and variation mechanisms.
-    It is the superclass of BreedingPipelein and SelectionMethod
+    It is the superclass of BreedingPipeline and SelectionMethod
     '''
     P_PROB = "prob"
     NO_PROBABILITY = -1.0

@@ -324,11 +324,11 @@ gp.fs.0.func.8.nc = nc1
 # The problem
 # ==============================
 
-eval.problem=zhixing.symbreg_multitarget.optimization.GPSymbolicRegressionMultiTarget
-eval.problem.data=yimei.jss.gp.data.DoubleData
+eval.problem= tasks.Symbreg.optimization.GPSymbolicRegression
+eval.problem.data=src.ec.GPData
 
-#SRproblemMTar.location = E:\\eclipse\\eclipse\\GPJSS-basicLGP\\src\\zhixing\\symbolicregression\\dataset\\
-eval.problem.dataname = InGaARaman_V1_1st25
+SymbolicRegression.location = D:\\zhixing\\科研\\LGP4PY\\LGP4PY\\dataset\\
+eval.problem.dataname = Nguyen4
 eval.problem.fitness = RSE
 eval.problem.Kfold_index = 0
 eval.problem.Kfold_num = 6

@@ -179,10 +179,11 @@ class LGPIndividual(GPIndividual):
                 trial -= 1
 
     @override
-    def execute(self, state, thread, input, individual, problem):
+    def execute(self, state:EvolutionState, thread:int, input:GPData, individual, 
+                problem:Problem, with_warp:bool = False):
         # check if the individual is evaluated
         if self.evaluated:
-            return  self.getRegisters[self.getOutputRegisters()] 
+            return  [ self.getRegistersIndex(r) for r in self.getOutputRegisters()] 
         
         # reset the registers
         self.resetRegisters(problem, 0.0)
@@ -194,15 +195,16 @@ class LGPIndividual(GPIndividual):
             # self.getFlowctrl().reset()
             pass
 
-        for instr in self.exec_trees:
-            instr.child.eval(state, thread, input, individual, problem)
+        for tree in self.getTreelist():
+            if tree.status:
+                tree.child.eval(state, thread, input, individual, problem)
 
-        if self.IsWrap():
+        if self.IsWrap() and with_warp:
             # if the individual is wrapped, we need to execute the wrapper
             for instr in self.wraplist:
                 instr.child.eval(state, thread, input, individual, problem)
 
-        return self.getRegisters[self.getOutputRegisters()] 
+        return [ self.getRegistersIndex(r) for r in self.getOutputRegisters()] 
     
     @override
     def preExecution(self, state:EvolutionState, thread:int):
@@ -281,7 +283,7 @@ class LGPIndividual(GPIndividual):
         self.registers = registers.copy()
 
     def resetRegisters(self, problem: Problem, value:float=0.0):
-        self.setRegisters(problem, [value]*self.getNumRegs())
+        self.setRegisters([value]*self.getNumRegs())
 
     def printTrees(self, state: EvolutionState=None)->str:
         x = 0

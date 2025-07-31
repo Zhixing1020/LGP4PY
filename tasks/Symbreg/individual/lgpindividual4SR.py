@@ -6,13 +6,20 @@ class LGPIndividual4SR(LGPIndividual):
 
     def __init__(self):
         super().__init__()
+        self.dataindex = 0
 
-    # def execute(self, state, thread, input, individual, problem):
-    #     return super().execute(state, thread, input, individual, problem)
+    @override
+    def execute(self, state, thread, input, individual, problem, with_wrap:bool = False):
+        return super().execute(state, thread, input, individual, problem, with_wrap)
     
     def postExecution(self, state, thread):
         return
     
+    def getDataIndex(self): return self.dataindex
+
+    def setDataIndex(self, index:int):
+        self.dataindex = index
+
     @override
     def makeGraphvizRule(self, outputRegs: list[int]) -> str:
         """

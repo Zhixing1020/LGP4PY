@@ -3,7 +3,7 @@ from src.ec.gp_defaults import GPDefaults
 from src.ec.gp_node import GPNode
 from src.ec.evolution_state import EvolutionState
 from src.ec.gp_data import GPData
-# from src.ec.fitness import Fitness
+from src.ec.fitness import Fitness
 # from copy import deepcopy
 
 from tasks.problem import Problem
@@ -23,7 +23,7 @@ class GPIndividual(ABC):
     def __init__(self):
         self.treelist:list[GPTree] = []*1  # storing all the tree in this individual
         self.evaluated = False  # evaluated or not
-        self.fitness = None  
+        self.fitness:Fitness = None  
         self.species = None   # the species that this individual belongs to
         self.breedingPipe = None   # the pipeline that produces this individuals
         

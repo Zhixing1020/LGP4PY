@@ -5,6 +5,9 @@ from dataclasses import dataclass
 class GPData:
     value:float = 0.0
 
+    def setup(self, state, base):
+        pass
+
     # def __deepcopy__(self):
     #     d = self.__class__
     #     d.value = self.value

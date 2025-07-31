@@ -39,7 +39,7 @@ class Fitness:
         # state.output.exit_if_errors()
 
     def setFitness(self, state:EvolutionState, fit:float):
-        self.value = float
+        self.value = fit
     
     def fitness(self)->float:
         return self.value
@@ -71,6 +71,10 @@ class Fitness:
     
     def __str__(self)->str:
         return str(self.value)
+    
+    def __repr__(self):
+        address = hex(id(self))
+        return f"Fitness(value={self.value}){address}"
 
     def readFitness(self, state, reader):
         line = reader.readline()

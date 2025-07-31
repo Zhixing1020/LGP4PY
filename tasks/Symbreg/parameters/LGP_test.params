@@ -19,7 +19,7 @@ state = ec.simple.SimpleEvolutionState
 finish = ec.simple.SimpleFinisher
 exch = ec.simple.SimpleExchanger
 breed =	ec.simple.SimpleBreeder
-eval = ec.simple.SimpleEvaluator
+eval = src.ec.Evaluator
 stat = ec.simple.SimpleStatistics
 stat.file = $out.stat
 stat.num-children = 1
@@ -324,7 +324,7 @@ gp.fs.0.func.8.nc = nc1
 # The problem
 # ==============================
 
-eval.problem= tasks.Symbreg.optimization.GPSymbolicRegression
+eval.problem= tasks.Symbreg.optimization.gp_symbolic_regression.GPSymbolicRegression
 eval.problem.data=src.ec.GPData
 
 SymbolicRegression.location = D:\\zhixing\\科研\\LGP4PY\\LGP4PY\\dataset\\

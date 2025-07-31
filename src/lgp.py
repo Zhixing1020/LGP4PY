@@ -15,6 +15,7 @@ import sys
 sys.path.append('D:/zhixing/科研/LGP4PY/LGP4PY')
 from src.ec import *
 from src.ec.util import *
+from tasks.Symbreg.optimization.gp_symbolic_regression import GPSymbolicRegression
 
 # set up LGP behaviors
 '''read parameters from the parameter file and set it into pset and toolbox'''
@@ -54,6 +55,13 @@ if __name__ == "__main__":
     pop = Population()
     pop.setup(state, Parameter('pop'))
     pop.populate(state, 0)
+
+    prob = GPSymbolicRegression()
+    prob.setup(state, Parameter('eval.problem'))
+
+    for subpop in pop.subpops:
+        for ind in subpop.individuals:
+            prob.evaluate(state, ind, subpop, 0)
 
     # for tree in subpop.individuals:
     #     print(tree)

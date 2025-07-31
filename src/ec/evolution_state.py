@@ -49,7 +49,7 @@ class EvolutionState:
 
         self.population = None  # will be a Population instance
         self.evaluator = None  # Evaluator instance
-        self.initializer = None  # Initializer instance
+        # self.initializer = None  # Initializer instance
         self.breeder = None  # Breeder instance
         self.statistics = None  # Statistics instance
 
@@ -117,8 +117,12 @@ class EvolutionState:
         # self.breeder = self.parameters.getInstanceForParameter(self.P_BREEDER, None, Breeder)
         # self.breeder.setup(self, self.P_BREEDER)
 
-        # self.evaluator = self.parameters.getInstanceForParameter(self.P_EVALUATOR, None, Evaluator)
-        # self.evaluator.setup(self, self.P_EVALUATOR)
+        from src.ec.evaluator import Evaluator
+        # Ensure the Evaluator is set up correctly
+        if not self.parameters.exists(self.P_EVALUATOR):
+            self.output.fatal(f"Evaluator not defined in parameters: {self.P_EVALUATOR}")
+        self.evaluator = self.parameters.getInstanceForParameter(self.P_EVALUATOR, None, Evaluator)
+        self.evaluator.setup(self, Parameter(self.P_EVALUATOR))
 
         # self.statistics = self.parameters.getInstanceForParameterEq(self.P_STATISTICS, None, Statistics)
         # self.statistics.setup(self, self.P_STATISTICS)

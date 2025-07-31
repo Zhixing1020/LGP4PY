@@ -4,6 +4,8 @@ the base parameter in "breeder.py" should be "pop.subpop.0.species.pipe". To see
 
 for each individual   add a variable recording the pipeline that produces it
 
+LGPIndividual4SR  is a merge of LGPIndividual4SR & LGPIndividual4SRMT
+
 ******** question *********
 what is GPinitializer  for?
 

@@ -1,8 +1,8 @@
-
+from abc import ABC, abstractmethod
 from src.ec import *
 from src.ec.util import Parameter
 
-class Problem:
+class Problem(ABC):
     
     P_PROBLEM = "problem"
     P_DATA = "data"
@@ -26,3 +26,7 @@ class Problem:
         new_prob = self.__class__()
         new_prob.input = copy.deepcopy(self.input)
         return new_prob
+    
+    @abstractmethod
+    def evaluate(self, state:EvolutionState, ind, subpopulation:int, threadnum:int):
+        pass

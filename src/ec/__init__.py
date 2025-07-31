@@ -1,5 +1,6 @@
 from .gp_defaults import GPDefaults
 from .evolution_state import EvolutionState
+from .evaluator import Evaluator
 from .fitness import Fitness
 from .gp_data import GPData
 from .gp_node_parent import GPNodeParent
@@ -20,6 +21,7 @@ from .gp_species import GPSpecies
 __author__ = "Zhixing Huang"
 __all__ = [
     "EvolutionState",
+    "Evaluator",
     "Fitness",
     "GPBuilder",
     "GPData",

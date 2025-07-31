@@ -102,15 +102,15 @@ class GPSymbolicRegression(Problem, SupervisedProblem):
         def_param = Parameter(self.PROBLEM_P)
 
         if not isinstance(self.input, GPData):
-            state.output.fatal("data class must subclass from GPData", base.push(self.P_DATA), None)
+            state.output.fatal(f"data class must subclass from GPData: {base.push(self.P_DATA)} or {def_param.push(self.P_DATA)}")
 
         self.location = state.parameters.getString(base.push(self.LOCATION_P), def_param.push(self.LOCATION_P))
         if self.location is None or self.location == "":
-            state.output.fatal("Empty location for the data", base.push(self.LOCATION_P), def_param.push(self.LOCATION_P))
+            state.output.fatal(f"Empty location for the data: {base.push(self.LOCATION_P)} or {def_param.push(self.LOCATION_P)}")
 
         self.dataname = state.parameters.getString(base.push(self.DATA_NAME_P), def_param.push(self.DATA_NAME_P))
         if self.dataname is None or self.dataname == "":
-            state.output.fatal("Empty name for the data", base.push(self.DATA_NAME_P), def_param.push(self.DATA_NAME_P))
+            state.output.fatal(f"Empty name for the data: {base.push(self.DATA_NAME_P)} or {def_param.push(self.DATA_NAME_P)}")
 
         self.fitness = state.parameters.getString(base.push(self.FITNESS_P), def_param.push(self.FITNESS_P))
         self.normalized = state.parameters.getBoolean(base.push(self.NORMALIZE_P), def_param.push(self.NORMALIZE_P))
@@ -123,7 +123,7 @@ class GPSymbolicRegression(Problem, SupervisedProblem):
 
         self.target_num = state.parameters.getIntWithDefault(base.push(self.TARGETNUM_P), def_param.push(self.TARGETNUM_P), 1)
         if self.target_num <= 0:
-            state.output.fatal("A symbolic regression problem must have at least one target.", base.push(self.TARGETNUM_P), def_param.push(self.TARGETNUM_P))
+            state.output.fatal(f"A symbolic regression problem must have at least one target: {base.push(self.TARGETNUM_P)} or {def_param.push(self.TARGETNUM_P)}")
 
         self.targets = []
         for t in range(self.target_num):

@@ -8,7 +8,7 @@ class ParameterDatabase:
         self._load(filename)
 
     def _load(self, filename):
-        with open(filename, 'r') as f:
+        with open(filename, 'r', encoding='utf-8') as f:
             for line in f:
                 # Strip comments and whitespace
                 line = line.split("#")[0].strip()
@@ -29,7 +29,8 @@ class ParameterDatabase:
                 return None
 
     def getString(self, param:Parameter, default:Parameter=None)->str:
-        return str(self.getParamValue(param, default))
+        res = self.getParamValue(param, default)
+        return str(res) if res is not None else None
     
     def getBoolean(self, param:Parameter, default_param:Parameter=None, default_val:bool=False)->bool:
         val = self.getParamValue(param, default_param)

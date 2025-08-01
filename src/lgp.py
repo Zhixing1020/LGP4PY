@@ -25,7 +25,8 @@ from tasks.Symbreg.optimization.gp_symbolic_regression import GPSymbolicRegressi
 if __name__ == "__main__":
     
     state = EvolutionState('D:\\zhixing\\科研\\LGP4PY\\LGP4PY\\tasks\\Symbreg\\parameters\\LGP_test.params')
-    state.setup("")
+    # state.setup("")
+    state.run()  # run the evolution state, which will read the parameters and set up the environment
 
     # builder = GPBuilder()
     # builder.setup(state, Parameter("gp.koza.half"))

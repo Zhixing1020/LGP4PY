@@ -71,7 +71,10 @@ class GPSpecies(ABC):
             state.output.fatal("We did not find the primitive set name", base.push(self.P_PRIMITIVESET), default.push(self.P_PRIMITIVESET))
         
         # for each primitive set in EvolutionState, we check the primitive set and grab the consistent one
-        
+        for ps in state.primitive_sets:
+            if ps.name == primset_name:
+                self.primitiveset = ps.clone()
+                break
 
     @classmethod
     def default_base(cls) -> Parameter:

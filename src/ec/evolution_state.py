@@ -54,9 +54,9 @@ class EvolutionState:
         self.statistics = None  # Statistics instance
 
         self.builder = None
-        self.primitive_set = None
+        self.primitive_sets = None
 
-    def setup(self, base:str):
+    def setup(self, base:str=""):
 
         # p = Parameter(base)
 
@@ -144,14 +144,18 @@ class EvolutionState:
         num_prim_set = self.parameters.getInt(Parameter(self.P_PRIMSET).push('size'), None)
         if num_prim_set < 1:
             self.output.fatal("there is less than one primitive set.", Parameter(self.P_PRIMSET).push('size'))
-        self.primitive_set = []
+        self.primitive_sets = []
         for pi in range(0, num_prim_set):
             pbase = Parameter(self.P_PRIMSET).push(str(pi))
             ps = GPPrimitiveSet()
             ps.setup(self, pbase)
-            self.primitive_set.append(ps)
+            self.primitive_sets.append(ps)
 
         self.generation = 0
+
+        from src.ec.population import Population
+        self.population = Population()
+        self.population.setup(self, Parameter(self.P_POP))
 
     def finish(self, result: int):
         self.statistics.finalStatistics(self, result)
@@ -161,13 +165,14 @@ class EvolutionState:
 
     def startFresh(self):
         self.output.message("Setting up")
-        self.setup(self, None)  # garbage Parameter equivalent
+        self.setup()  # garbage Parameter equivalent
 
         # POPULATION INITIALIZATION
         self.output.message("Initializing Generation 0")
-        self.statistics.preInitializationStatistics(self)
-        self.population = self.initializer.initialPopulation(self, 0)
-        self.statistics.postInitializationStatistics(self)
+        # self.statistics.preInitializationStatistics(self)
+        # self.population = self.initializer.initialPopulation(self, 0)
+        self.population.populate(self, 0)
+        # self.statistics.postInitializationStatistics(self)
 
         # Compute generations from evaluations if necessary
         if self.numEvaluations > self.UNDEFINED:
@@ -238,7 +243,7 @@ class EvolutionState:
 
         return self.R_NOTDONE
 
-    def run(self, condition: int):
+    def run(self):
         
         self.startFresh()
 

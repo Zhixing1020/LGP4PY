@@ -100,16 +100,17 @@ class GPPrimitiveSet:
 
     def clone(self):
         newset = self.__class__()
-        newset.nodes = [ n.clone() for n in self.nodes]
+        newset.name = self.name
+        newset.nodes = [ n.lightClone() for n in self.nodes]
         # self.nodes_by_name:Set[str] = set()
 
-        newset.nonterminals = [n.clone() for n in self.nonterminals]
-        newset.terminals = [ n.clone() for n in self.terminals ]
+        newset.nonterminals = [n.lightClone() for n in self.nonterminals]
+        newset.terminals = [ n.lightClone() for n in self.terminals ]
 
-        newset.registers = [n.clone() for n in self.registers]
-        newset.nonregisters = [n.clone() for n in self.nonregisters]
+        newset.registers = [n.lightClone() for n in self.registers]
+        newset.nonregisters = [n.lightClone() for n in self.nonregisters]
 
-        newset.constants = [n.clone() for n in self.constants]
-        newset.nonconstants = [n.clone() for n in self.nonconstants]
+        newset.constants = [n.lightClone() for n in self.constants]
+        newset.nonconstants = [n.lightClone() for n in self.nonconstants]
 
-        newset.flowoperators = [n.clone() for n in self.flowoperators]
+        newset.flowoperators = [n.lightClone() for n in self.flowoperators]

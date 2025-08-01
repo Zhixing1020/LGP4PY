@@ -79,8 +79,8 @@ class CrossoverPipeline(BreedingPipeline):
         c.parents = [None, None]   # self.parents.clone()
         return c
 
-    def verifyPoints(self, initializer, inner1:GPNode, inner2:GPNode):
-        if not inner1.swapCompatibleWith(initializer, inner2):
+    def verifyPoints(self, inner1:GPNode, inner2:GPNode):
+        if not inner1.swapCompatibleWith(inner2):
             return False
 
         if inner1.depth() + inner2.atDepth() > self.maxDepth:
@@ -118,11 +118,11 @@ class CrossoverPipeline(BreedingPipeline):
             parent1 = self.parents[0]
             parent2 = self.parents[1]
 
-            q += self.produce_individuals(min, max, q, subpopulation, inds, state, thread, [parent1, parent2])
+            q += self.produceIndividuals(min, max, q, subpopulation, inds, state, thread, [parent1, parent2])
 
         return n
 
-    def produce_individuals(self, min, max, start, subpopulation, 
+    def produceIndividuals(self, min, max, start, subpopulation, 
                             inds, state:EvolutionState, thread, parents:list[GPIndividual])->tuple[int, list[GPIndividual]]:
         # How many individuals should we make?
         n = self.typicalIndsProduced()
@@ -139,6 +139,7 @@ class CrossoverPipeline(BreedingPipeline):
         
         q = start
         parnt = 0
+        new_inds = []
         while q < n + start:
             # Check tree values validity
             if (self.tree1 != self.TREE_UNFIXED and 
@@ -153,31 +154,28 @@ class CrossoverPipeline(BreedingPipeline):
                 "which was out of bounds of the array of the individual's trees. Check the pipeline's fixed tree values" \
                 " -- they may be negative or greater than the number of trees in an individual")
 
+
+            # Make sure the constraints are okay
+            if parents[0].species == parents[1].species:
+                state.output.fatal("GP Crossover Pipeline's two parents have different GPSpecies")
             t1 = 0
             t2 = 0
             if self.tree1 == self.TREE_UNFIXED or self.tree2 == self.TREE_UNFIXED:
-                while True:
-                    # Pick random trees - their GPTreeConstraints must be the same
-                    if self.tree1 == self.TREE_UNFIXED:
-                        t1 = (state.random[thread].randint(parents[0].getTreesLength()) 
-                              if parents[0].getTreesLength() > 1 else 0)
-                    else:
-                        t1 = self.tree1
+                if self.tree1 == self.TREE_UNFIXED:
+                    t1 = (state.random[thread].randint(parents[0].getTreesLength()) 
+                            if parents[0].getTreesLength() > 1 else 0)
+                else:
+                    t1 = self.tree1
 
-                    if self.tree2 == self.TREE_UNFIXED:
-                        t2 = (state.random[thread].randint(parents[1].getTreesLength()) 
-                              if parents[1].getTreesLength() > 1 else 0)
-                    else:
-                        t2 = self.tree2
-
-                    if parents[0].getTree(t1).constraints(initializer) == parents[1].getTree(t2).constraints(initializer):
-                        break
+                if self.tree2 == self.TREE_UNFIXED:
+                    t2 = (state.random[thread].randint(parents[1].getTreesLength()) 
+                            if parents[1].getTreesLength() > 1 else 0)
+                else:
+                    t2 = self.tree2
             else:
                 t1 = self.tree1
                 t2 = self.tree2
-                # Make sure the constraints are okay
-                if parents[0].getTree(t1).constraints(initializer) != parents[1].getTree(t2).constraints(initializer):
-                    state.output.fatal("GP Crossover Pipeline's two tree choices are both specified by the user -- but their GPTreeConstraints are not the same")
+                
 
             # Validity results
             res1 = False
@@ -199,11 +197,11 @@ class CrossoverPipeline(BreedingPipeline):
                 p2 = self.nodeselect2.pickNode(state, subpopulation, thread, parents[1], parents[1].getTree(t2))
                 
                 # Check for depth and swap-compatibility limits
-                res1 = self.verifyPoints(initializer, p2, p1)  # p2 can fill p1's spot
+                res1 = self.verifyPoints(p2, p1)  # p2 can fill p1's spot
                 if n - (q - start) < 2 or self.tossSecondParent:
                     res2 = True
                 else:
-                    res2 = self.verifyPoints(initializer, p1, p2)  # p1 can fill p2's spot
+                    res2 = self.verifyPoints(p1, p2)  # p1 can fill p2's spot
                 
                 # Did we get something that had both nodes verified?
                 if res1 and res2:
@@ -256,9 +254,11 @@ class CrossoverPipeline(BreedingPipeline):
             
             # Add the individuals to the population
             inds[q] = j1
+            new_inds.append(j1)
             q += 1
             if q < n + start and not self.tossSecondParent and j2 is not None:
                 inds[q] = j2
+                new_inds.append(j2)
                 q += 1
 
-        return n
+        return n, new_inds

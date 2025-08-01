@@ -143,7 +143,7 @@ class BreedingPipeline(BreedingSource):
                 self.sources[x].finishProducing(state, subpopulation, thread)
 
     @abstractmethod
-    def produce_individuals(self, min, max, start, subpopulation, inds, state, thread, parents)->tuple[int, list[GPIndividual]]:
+    def produceIndividuals(self, min, max, start, subpopulation, inds, state, thread, parents)->tuple[int, list[GPIndividual]]:
         pass
 
     # def preparePipeline(self, hook):

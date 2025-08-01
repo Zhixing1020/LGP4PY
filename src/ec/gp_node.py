@@ -8,7 +8,6 @@ from src.ec.evolution_state import EvolutionState
 from src.ec.gp_defaults import GPDefaults
 from src.ec.gp_data import GPData
 from src.ec.gp_node_parent import GPNodeParent
-from src.ec.gp_tree import GPTree
 
 from tasks.problem import Problem
 
@@ -184,7 +183,7 @@ class GPNode(GPNodeParent):
 
         return p
     
-    def rootParent(self)->GPTree:
+    def rootParent(self) -> 'GPNodeParent':
         cparent = self
         while cparent is not None and isinstance(cparent, GPNode):
             cparent = cparent.parent

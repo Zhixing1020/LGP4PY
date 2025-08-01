@@ -44,6 +44,7 @@ breed.elite.0 = 5
 # GP population parameters
 #pop.subpop.0.species = src.ec.GPSpecies
 pop.subpop.0.species = src.lgp.species.LGPSpecies
+pop.subpop.0.species.fset = f0
 pop.subpop.0.species.ind = tasks.Symbreg.individual.LGPIndividual4SR
 pop.subpop.0.species.ind.maxnumtrees = 100
 pop.subpop.0.species.ind.minnumtrees = 1

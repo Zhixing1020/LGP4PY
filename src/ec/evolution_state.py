@@ -27,7 +27,7 @@ class EvolutionState:
     P_NODEEVALUATIONS: str = "nodeevaluations"
     P_EVALUATIONS: str = "evaluations"
     P_BUILDER: str = "gp.tc.0.init"  # only for the initializer in the first tree constraint
-    P_PRIMSET: str = "gp.fs.0"
+    P_PRIMSET: str = "gp.fs"
 
     def __init__(self, parameterPath:str):
         # ParameterDatabase
@@ -138,8 +138,18 @@ class EvolutionState:
         from src.ec.gp_primitive_set import GPPrimitiveSet
         # if self.parameters.exists(self.P_PRIMSET):
             # self.primitive_set = self.parameters.getInstanceForParameter(self.P_PRIMSET, None, GPPrimitiveSet)
-        self.primitive_set = GPPrimitiveSet()
-        self.primitive_set.setup(self, Parameter(self.P_PRIMSET))
+        # self.primitive_set = GPPrimitiveSet()
+        # self.primitive_set.setup(self, Parameter(self.P_PRIMSET))
+
+        num_prim_set = self.parameters.getInt(Parameter(self.P_PRIMSET).push('size'), None)
+        if num_prim_set < 1:
+            self.output.fatal("there is less than one primitive set.", Parameter(self.P_PRIMSET).push('size'))
+        self.primitive_set = []
+        for pi in range(0, num_prim_set):
+            pbase = Parameter(self.P_PRIMSET).push(str(pi))
+            ps = GPPrimitiveSet()
+            ps.setup(self, pbase)
+            self.primitive_set.append(ps)
 
         self.generation = 0
 

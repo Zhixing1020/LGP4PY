@@ -97,3 +97,19 @@ class GPPrimitiveSet:
 
             if isinstance(node, FlowOperator):
                 self.flowoperators.append(node)
+
+    def clone(self):
+        newset = self.__class__()
+        newset.nodes = [ n.clone() for n in self.nodes]
+        # self.nodes_by_name:Set[str] = set()
+
+        newset.nonterminals = [n.clone() for n in self.nonterminals]
+        newset.terminals = [ n.clone() for n in self.terminals ]
+
+        newset.registers = [n.clone() for n in self.registers]
+        newset.nonregisters = [n.clone() for n in self.nonregisters]
+
+        newset.constants = [n.clone() for n in self.constants]
+        newset.nonconstants = [n.clone() for n in self.nonconstants]
+
+        newset.flowoperators = [n.clone() for n in self.flowoperators]

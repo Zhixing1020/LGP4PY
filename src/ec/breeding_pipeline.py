@@ -31,6 +31,12 @@ class BreedingPipeline(BreedingSource):
     #Standard parameter for individual-selectors associated with a BreedingPipeline
     P_SOURCE = "source"
 
+    # Standard parameter for node-selectors associated with a GPBreedingPipeline
+    P_NODESELECTOR = "ns"
+
+    # Standard parameter for tree fixin
+    P_TREE = "tree"
+
     def __init__(self):
         self.mybase:Parameter = None
         # self.likelihood = 1.0
@@ -135,6 +141,10 @@ class BreedingPipeline(BreedingSource):
         for x in range(len(self.sources)):
             if x == 0 or self.sources[x] != self.sources[x - 1]:
                 self.sources[x].finishProducing(state, subpopulation, thread)
+
+    @abstractmethod
+    def produce_individuals(self, min, max, start, subpopulation, inds, state, thread, parents)->tuple[int, list[GPIndividual]]:
+        pass
 
     # def preparePipeline(self, hook):
     #     for source in self.sources:

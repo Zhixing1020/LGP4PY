@@ -8,12 +8,13 @@ from src.ec.evolution_state import EvolutionState
 from src.ec.gp_defaults import GPDefaults
 from src.ec.gp_data import GPData
 from src.ec.gp_node_parent import GPNodeParent
+from src.ec.gp_tree import GPTree
 
 from tasks.problem import Problem
 
 # import copy
 
-class GPNodeGatherer:
+class GPNodeGather:
         def __init__(self):
             self.node:GPNode = None
 
@@ -162,7 +163,7 @@ class GPNode(GPNodeParent):
         return count
     
     
-    def nodeInPosition(self, p: int, g: GPNodeGatherer, nodesearch: int) -> int:
+    def nodeInPosition(self, p: int, g: GPNodeGather, nodesearch: int) -> int:
         from src.lgp.individual.primitive import WriteRegisterGPNode, ReadRegisterGPNode
         if (nodesearch == self.NODESEARCH_ALL or
             (nodesearch == self.NODESEARCH_TERMINALS and len(self.children) == 0) or
@@ -183,6 +184,12 @@ class GPNode(GPNodeParent):
 
         return p
     
+    def rootParent(self)->GPTree:
+        cparent = self
+        while cparent is not None and isinstance(cparent, GPNode):
+            cparent = cparent.parent
+        return cparent
+
     def contains(self, subnode) -> bool:
         if subnode == self:
             return True

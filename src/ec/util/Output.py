@@ -8,7 +8,10 @@ class Output:
         print(f"Warning: {message}", file=sys.stderr)
 
     def fatal(self, message: str, *args):
-        raise SystemExit(f"Fatal error: {message}")
+        error_msg = f"Fatal error: {message}. "
+        if args:
+            error_msg += ' Params: '.join(str(arg) for arg in args)
+        raise SystemExit(error_msg)
     
     def message(self, message: str):
         print(f"{message}")

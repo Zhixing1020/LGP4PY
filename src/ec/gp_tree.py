@@ -17,6 +17,7 @@ class GPTree(GPNodeParent):
         super()
         self.child:GPNode = None
         self.owner = None
+        self.species = None
     
     @classmethod
     def defaultBase(cls) -> Parameter:
@@ -36,6 +37,7 @@ class GPTree(GPNodeParent):
         newtree.owner = self.owner
         # newtree.argposition = self.argposition
         # newtree.parent = self.parent
+        newtree.species = self.species
         return newtree
 
     def clone(self) -> 'GPTree':
@@ -54,4 +56,4 @@ class GPTree(GPNodeParent):
         return self.child.printRootedTreeInString()
 
     def buildTree(self, state:EvolutionState, thread:int):
-        self.child = state.builder.newRootedTree(state, 0, self, state.primitive_set, 0)
+        self.child = state.builder.newRootedTree(state, 0, self, self.species.primitiveset, 0)

@@ -12,8 +12,7 @@ class CrossoverPipeline(BreedingPipeline):
     P_TOSS = "toss"
     INDS_PRODUCED = 2
     NUM_SOURCES = 2
-    NO_SIZE_LIMIT = -1
-    TREE_UNFIXED = -1
+    
 
     def __init__(self):
         super().__init__()
@@ -108,6 +107,7 @@ class CrossoverPipeline(BreedingPipeline):
         #     return self.reproduce(n, start, subpopulation, inds, state, thread, True)
 
         q = start
+        newinds = []
         while q < n + start:
             if self.sources[0] == self.sources[1]:
                  _ , self.parents = self.sources[0].produce(2, 2, 0, subpopulation, self.parents, state, thread)
@@ -118,7 +118,10 @@ class CrossoverPipeline(BreedingPipeline):
             parent1 = self.parents[0]
             parent2 = self.parents[1]
 
-            q += self.produceIndividuals(min, max, q, subpopulation, inds, state, thread, [parent1, parent2])
+            nw, newinds_ = self.produceIndividuals(min, max, q, subpopulation, inds, state, thread, [parent1, parent2])
+            
+            q += nw
+            newinds.append( newinds_)
 
         return n
 

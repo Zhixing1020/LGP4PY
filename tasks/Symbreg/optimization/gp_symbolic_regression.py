@@ -11,7 +11,7 @@ from typing import List
 from src.ec import *
 from src.ec.util import Parameter,ParameterDatabase
 from tasks.problem import Problem
-from tasks.supervisedProblem import SupervisedProblem
+from tasks.supervisedproblem import SupervisedProblem
 from tasks.Symbreg.individual.lgpindividual4SR import LGPIndividual4SR
 
 from sklearn.metrics import mean_squared_error, root_mean_squared_error, r2_score

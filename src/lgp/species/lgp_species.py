@@ -25,3 +25,4 @@ class LGPSpecies(GPSpecies):
             super().default_base().push(self.P_INDIVIDUAL).push(self.i_prototype.P_TREE).push("0"),
             GPTreeStruct)
         self.instr_prototype.setup(state, base.push(self.P_INDIVIDUAL).push(self.i_prototype.P_TREE).push("0"))
+        self.instr_prototype.species = self

@@ -328,7 +328,7 @@ gp.fs.0.func.8.nc = nc1
 eval.problem= tasks.Symbreg.optimization.gp_symbolic_regression.GPSymbolicRegression
 eval.problem.data=src.ec.GPData
 
-SymbolicRegression.location = D:\\zhixing\\科研\\LGP4PY\\LGP4PY\\dataset\\
+SymbolicRegression.location = D:\\data\\study\\LGP4PY\\LGP4PY\\dataset\\
 eval.problem.dataname = Nguyen4
 eval.problem.fitness = RSE
 eval.problem.Kfold_index = 0

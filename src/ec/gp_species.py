@@ -61,6 +61,7 @@ class GPSpecies(ABC):
         # Ensure individual prototype is a GPIndividual
         if not isinstance(self.i_prototype, GPIndividual):
             state.output.fatal(f"The Individual class for the Species {self.__class__.__name__} must be a subclass of GPIndividual.", base)
+        self.i_prototype.species = self
 
         self.f_prototype = state.parameters.getInstanceForParameter(
             base.push(self.P_FITNESS), default.push(self.P_FITNESS), Fitness)

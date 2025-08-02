@@ -114,3 +114,4 @@ class GPPrimitiveSet:
         newset.nonconstants = [n.lightClone() for n in self.nonconstants]
 
         newset.flowoperators = [n.lightClone() for n in self.flowoperators]
+        return newset

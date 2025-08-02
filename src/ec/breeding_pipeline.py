@@ -37,6 +37,9 @@ class BreedingPipeline(BreedingSource):
     # Standard parameter for tree fixin
     P_TREE = "tree"
 
+    NO_SIZE_LIMIT = -1
+    TREE_UNFIXED = -1
+
     def __init__(self):
         self.mybase:Parameter = None
         # self.likelihood = 1.0

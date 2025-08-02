@@ -26,6 +26,7 @@ class EvolutionState:
     P_GENERATIONS: str = "generations"
     P_NODEEVALUATIONS: str = "nodeevaluations"
     P_EVALUATIONS: str = "evaluations"
+    P_QUITONRUNCOMPLETE: str = "quit-on-run-complete" 
     P_BUILDER: str = "gp.tc.0.init"  # only for the initializer in the first tree constraint
     P_PRIMSET: str = "gp.fs"
 
@@ -55,6 +56,8 @@ class EvolutionState:
 
         self.builder = None
         self.primitive_sets = None
+
+        self.quitOnRunComplete = False
 
     def setup(self, base:str=""):
 
@@ -106,7 +109,7 @@ class EvolutionState:
             if self.numNodeEva <= 0:
                 self.fatal("Node evaluations must be >= 1 if defined.")
 
-        # self.quitOnRunComplete = parameters.getBoolean("quit-on-run-complete", False)
+        self.quitOnRunComplete = self.parameters.getBoolean(self.P_QUITONRUNCOMPLETE, None, False)
 
         # self.initializer = self.parameters.getInstanceForParameter(self.P_INITIALIZER, None, Initializer)
         # self.initializer.setup(self, self.P_INITIALIZER)
@@ -194,16 +197,16 @@ class EvolutionState:
             self.output.message(f"Generations will be {self.numGenerations}")
 
         # self.exchanger.initializeContacts(self)
-        self.evaluator.initializeContacts(self)
+        # self.evaluator.initializeContacts(self)
 
     def evolve(self):
         if self.generation > 0:
             self.output.message(f"Generation {self.generation}")
 
         # EVALUATION
-        self.statistics.preEvaluationStatistics(self)
+        # self.statistics.preEvaluationStatistics(self)
         self.evaluator.evaluatePopulation(self)
-        self.statistics.postEvaluationStatistics(self)
+        # self.statistics.postEvaluationStatistics(self)
 
         # SHOULD WE QUIT?
         if self.evaluator.runComplete(self) and self.quitOnRunComplete:

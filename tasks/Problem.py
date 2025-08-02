@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from src.ec import *
+from src.ec.gp_data import GPData
 from src.ec.util import Parameter
 
 class Problem(ABC):

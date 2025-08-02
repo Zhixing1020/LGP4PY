@@ -24,6 +24,7 @@ class Evaluator:
         self.p_problem = state.parameters.getInstanceForParameter(base.push(self.P_PROBLEM), def_base.push(self.P_PROBLEM), Problem)
         if self.p_problem is None:
             state.output.fatal(f"Problem instance not found in parameters: {base.push(self.P_PROBLEM)} or {def_base.push(self.P_PROBLEM)}")
+        self.p_problem.setup(state, base.push(self.P_PROBLEM))
 
         self.cloneProblem = state.parameters.getBoolean(base.push(self.P_CLONE_PROBLEM), def_base.push(self.P_CLONE_PROBLEM), False)
         if not self.cloneProblem and state.breedthreads > 1:
@@ -57,7 +58,7 @@ class Evaluator:
         #             state.output.fatal("Chunk Size must be either an integer >= 1 or 'auto'", base.push("chunk-size"), None)
 
 
-    def evaluate_population(self, state:EvolutionState):
+    def evaluatePopulation(self, state:EvolutionState):
         # if self.numTests > 1:
         #     self.expand(state)
 
@@ -71,14 +72,14 @@ class Evaluator:
 
         if state.evalthreads == 1:
             prob = copy.deepcopy(self.p_problem) if self.cloneProblem else self.p_problem
-            self.eval_pop_chunk(state, numinds, from_index, 0, prob)
+            self.evalPopChunk(state, numinds, from_index, 0, prob)
         else:
             with ThreadPoolExecutor(max_workers=state.evalthreads) as executor:
                 futures = []
                 for i in range(state.evalthreads):
                     prob = copy.deepcopy(self.p_problem) if self.cloneProblem else self.p_problem
                     futures.append(
-                        executor.submit(self.eval_pop_chunk, state, numinds, from_index, i, prob)
+                        executor.submit(self.evalPopChunk, state, numinds, from_index, i, prob)
                     )
                 for future in futures:
                     future.result()  # Wait for completion
@@ -86,7 +87,7 @@ class Evaluator:
         # if self.numTests > 1:
         #     self.contract(state)
 
-    def eval_pop_chunk(self, state:EvolutionState, numinds, from_index, threadnum, problem:Problem):
+    def evalPopChunk(self, state:EvolutionState, numinds, from_index, threadnum, problem:Problem):
         # problem.prepare_to_evaluate(state, threadnum)
 
         for pop_index, subpop in enumerate(state.population.subpops):
@@ -104,3 +105,10 @@ class Evaluator:
 
     # def contract(self, state):
     #     pass  # stub for numTests > 1 case
+
+    def runComplete(self, state:EvolutionState)->bool:
+        for sp in state.population.subpops:
+            for ind in sp.individuals:
+                if(ind.fitness.isIdealFitness()):
+                    return True
+        return False

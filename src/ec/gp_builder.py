@@ -264,13 +264,13 @@ class GPBuilder:
 
 
     
-    def newRootedTree(self, state:EvolutionState, thread:int, parent:GPNodeParent, set:GPPrimitiveSet, argposition:int)->GPNode:
+    def newRootedTree(self, state:EvolutionState, thread:int, parent:GPNodeParent, set:GPPrimitiveSet, argposition:int, position:int=0)->GPNode:
         # return self.full_node(state, 0, state.random[thread].randint(0, self.maxDepth-self.minDepth) + self.minDepth,
         #                  thread,parent,argposition,set)
         if state.random[thread].random() < 0.5:
-            return self.grow_node_reg(state, 0, state.random[thread].randint(self.minDepth, self.maxDepth), thread, parent, argposition, set)
+            return self.grow_node_reg(state, position, state.random[thread].randint(self.minDepth, self.maxDepth), thread, parent, argposition, set)
         else:
-            return self.full_node_reg(state, 0, state.random[thread].randint(self.minDepth, self.maxDepth), thread, parent, argposition, set)
+            return self.full_node_reg(state, position, state.random[thread].randint(self.minDepth, self.maxDepth), thread, parent, argposition, set)
     
 
 if __name__ == "__main__":

@@ -123,7 +123,10 @@ class CrossoverPipeline(BreedingPipeline):
             q += nw
             newinds.append( newinds_)
 
-        return n
+            for ni in newinds_:
+                ni.breedingPipe = self
+
+        return n, newinds
 
     def produceIndividuals(self, min, max, start, subpopulation, 
                             inds, state:EvolutionState, thread, parents:list[GPIndividual])->tuple[int, list[GPIndividual]]:

@@ -15,10 +15,10 @@ checkpoint-prefix = ec
 # ==============================
 # Basic evolution parameters
 # ==============================
-state = ec.simple.SimpleEvolutionState
+state = src.ec.EvolutionState
 finish = ec.simple.SimpleFinisher
 exch = ec.simple.SimpleExchanger
-breed =	ec.simple.SimpleBreeder
+breed =	src.ec.Breeder
 eval = src.ec.Evaluator
 stat = ec.simple.SimpleStatistics
 stat.file = $out.stat
@@ -89,22 +89,22 @@ init = ec.gp.GPInitializer
 pop.subpop.0.species.pipe = src.ec.Breeder
 pop.subpop.0.species.pipe.generate-max = false
 pop.subpop.0.species.pipe.num-sources = 5
-pop.subpop.0.species.pipe.source.0 = zhixing.cpxInd.individual.reproduce.LGPMicroMutationPipeline
+pop.subpop.0.species.pipe.source.0 = src.lgp.individual.reproduce.LGPMicroMutationPipeline
 pop.subpop.0.species.pipe.source.0.prob = 0.0
-pop.subpop.0.species.pipe.source.1 = zhixing.cpxInd.individual.reproduce.LGPMacroMutationPipeline
+pop.subpop.0.species.pipe.source.1 = src.lgp.individual.reproduce.LGPMacroMutationPipeline
 pop.subpop.0.species.pipe.source.1.micro_base = pop.subpop.0.species.pipe.source.4
 #pop.subpop.0.species.pipe.source.1.micro_base = null
 pop.subpop.0.species.pipe.source.1.prob = 0.6
 
-pop.subpop.0.species.pipe.source.2 = zhixing.cpxInd.individual.reproduce.LGP2PointCrossoverPipeline
+pop.subpop.0.species.pipe.source.2 = src.lgp.individual.reproduce.LGP2PointCrossoverPipeline
 pop.subpop.0.species.pipe.source.2.micro_base = pop.subpop.0.species.pipe.source.4
 #pop.subpop.0.species.pipe.source.2.micro_base = null
 pop.subpop.0.species.pipe.source.2.prob = 0.3
 
-pop.subpop.0.species.pipe.source.3 = ec.breed.ReproductionPipeline
+pop.subpop.0.species.pipe.source.3 = src.lgp.individual.reproduce.ReproductionPipeline
 pop.subpop.0.species.pipe.source.3.prob = 0.1 
 
-pop.subpop.0.species.pipe.source.4 = zhixing.cpxInd.individual.reproduce.LGPSwapPipeline
+pop.subpop.0.species.pipe.source.4 = src.lgp.individual.reproduce.LGPSwapPipeline
 pop.subpop.0.species.pipe.source.4.micro_base = pop.subpop.0.species.pipe.source.0
 #pop.subpop.0.species.pipe.source.4.micro_base = null
 pop.subpop.0.species.pipe.source.4.prob = 0.0

@@ -97,17 +97,17 @@ class EvolutionState:
         if self.parameters.exists(self.P_GENERATIONS):
             self.numGenerations = self.parameters.getInt(self.P_GENERATIONS, None)
             if self.numGenerations <= 0:
-                self.fatal("Generations must be >= 1 if defined.")
+                self.output.fatal("Generations must be >= 1 if defined.")
             if self.numEvaluations != self.__class__.UNDEFINED:
                 self.output.warning("Both generations and evaluations defined. Generations will be ignored.")
                 self.numGenerations = self.__class__.UNDEFINED
         elif self.numEvaluations == self.__class__.UNDEFINED:
-            self.fatal("Either evaluations or generations must be defined.")
+            self.output.fatal("Either evaluations or generations must be defined.")
 
         if self.parameters.exists(self.P_NODEEVALUATIONS):
-            self.numNodeEva = self.parameters.getDouble(self.P_NODEEVALUATIONS, None)
+            self.numNodeEva = self.parameters.getDoubleWithDefault(self.P_NODEEVALUATIONS, None, -1)
             if self.numNodeEva <= 0:
-                self.fatal("Node evaluations must be >= 1 if defined.")
+                self.output.fatal("Node evaluations must be >= 1 if defined.")
 
         self.quitOnRunComplete = self.parameters.getBoolean(self.P_QUITONRUNCOMPLETE, None, False)
 
@@ -117,14 +117,15 @@ class EvolutionState:
         # self.finisher = self.parameters.getInstanceForParameter(self.P_FINISHER, None, Finisher)
         # self.finisher.setup(self, self.P_FINISHER)
 
-        # self.breeder = self.parameters.getInstanceForParameter(self.P_BREEDER, None, Breeder)
-        # self.breeder.setup(self, self.P_BREEDER)
+        from src.ec.breeder import Breeder
+        self.breeder = self.parameters.getInstanceForParameter(self.P_BREEDER, None, Breeder)
+        self.breeder.setup(self, self.P_BREEDER)
 
         from src.ec.evaluator import Evaluator
         # Ensure the Evaluator is set up correctly
         if not self.parameters.exists(self.P_EVALUATOR):
             self.output.fatal(f"Evaluator not defined in parameters: {self.P_EVALUATOR}")
-        self.evaluator = self.parameters.getInstanceForParameter(self.P_EVALUATOR, None, Evaluator)
+        self.evaluator:Evaluator = self.parameters.getInstanceForParameter(self.P_EVALUATOR, None, Evaluator)
         self.evaluator.setup(self, Parameter(self.P_EVALUATOR))
 
         # self.statistics = self.parameters.getInstanceForParameterEq(self.P_STATISTICS, None, Statistics)
@@ -135,7 +136,7 @@ class EvolutionState:
 
         from src.ec.gp_builder import GPBuilder
         if self.parameters.exists(self.P_BUILDER):
-            self.builder = self.parameters.getInstanceForParameter(self.P_BUILDER, None, GPBuilder)
+            self.builder:GPBuilder = self.parameters.getInstanceForParameter(self.P_BUILDER, None, GPBuilder)
             self.builder.setup(self, Parameter(self.P_BUILDER))
 
         from src.ec.gp_primitive_set import GPPrimitiveSet
@@ -227,9 +228,9 @@ class EvolutionState:
         #     return self.R_SUCCESS
 
         # BREEDING
-        self.statistics.preBreedingStatistics(self)
+        # self.statistics.preBreedingStatistics(self)
         self.population = self.breeder.breedPopulation(self)
-        self.statistics.postBreedingStatistics(self)
+        # self.statistics.postBreedingStatistics(self)
 
         # POST-BREEDING EXCHANGING
         # self.statistics.prePostBreedingExchangeStatistics(self)

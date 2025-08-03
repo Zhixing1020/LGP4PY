@@ -80,7 +80,7 @@ class MutationPipeline(BreedingPipeline):
             if self.tree == -1:
                 state.output.fatal("Tree fixed value, if defined, must be >= 0")
 
-    def verifyPoints(self, inner1, inner2):
+    def verifyPoints(self, inner1:GPNode, inner2:GPNode):
         # Check depth
         if inner1.depth() + inner2.atDepth() > self.maxDepth:
             return False
@@ -96,7 +96,7 @@ class MutationPipeline(BreedingPipeline):
                     return False
         return True
 
-    def produce(self, min, max, start, subpopulation, inds, state, thread):
+    def produce(self, min, max, start, subpopulation, inds, state, thread)->tuple[int, list[GPIndividual]]:
         # Grab individuals from our source
         n = self.sources[0].produce(min, max, start, subpopulation, inds, state, thread)
 
@@ -105,21 +105,33 @@ class MutationPipeline(BreedingPipeline):
         #     return self.reproduce(n, start, subpopulation, inds, state, thread, False)
 
         # Mutate them
+        res = []
         for q in range(start, n + start):
             i = inds[q]
-            inds[q] = self.produceIndividual(subpopulation, i, state, thread)
-        return n
+            _, tmp = self.produceIndividuals(_, _, _, subpopulation, _, state, thread, [i])
+            tmp[0].breedingPipe = self
+            inds[q] = tmp[0]
+            res.append(tmp[0])
 
-    def produceIndividual(self, subpopulation, i, state, thread):
+        return n, res
+
+    def produceIndividuals(self, min:int, max:int, start:int, subpopulation:int, inds:list[GPIndividual], 
+                           state:EvolutionState, thread:int, parents:list[GPIndividual])->tuple[int, list[GPIndividual]]:
         # initializer = state.initializer
 
+        if len(parents) > 1:
+            state.output.warning("there are more than one parents for mutation, but we only use the first one")
+
+        parent = parents[0]
+
         if (self.tree != self.TREE_UNFIXED and 
-            (self.tree < 0 or self.tree >= i.getTreesLength())):
-            state.output.fatal("GP Mutation Pipeline attempted to fix tree.0 to a value which was out of bounds of the array of the individual's trees. Check the pipeline's fixed tree values -- they may be negative or greater than the number of trees in an individual")
+            (self.tree < 0 or self.tree >= parent.getTreesLength())):
+            state.output.fatal("GP Mutation Pipeline attempted to fix tree.0 to a value which was out of bounds of the array of the individual's trees. " \
+            "Check the pipeline's fixed tree values -- they may be negative or greater than the number of trees in an individual")
 
         # Pick random tree
         if self.tree == self.TREE_UNFIXED:
-            t = state.random[thread].nextInt(i.getTreesLength()) if i.getTreesLength() > 1 else 0
+            t = state.random[thread].randint(parent.getTreesLength()) if parent.getTreesLength() > 1 else 0
         else:
             t = self.tree
 
@@ -135,19 +147,18 @@ class MutationPipeline(BreedingPipeline):
         
         for x in range(self.numTries):
             # Pick a node in individual
-            p1 = self.nodeselect.pickNode(state, subpopulation, thread, i, i.getTree(t))
+            p1 = self.nodeselect.pickNode(state, subpopulation, thread, parent, parent.getTree(t))
             
             # Generate a tree swap-compatible with p1's position
-            size = GPNodeBuilder.NOSIZEGIVEN if not self.equalSize else p1.numNodes(GPNode.NODESEARCH_ALL)
+            # size = GPNodeBuilder.NOSIZEGIVEN if not self.equalSize else p1.numNodes(GPNode.NODESEARCH_ALL)
+            size = p1.numNodes(GPNode.NODESEARCH_ALL)
             
             p2 = self.builder.newRootedTree(
                 state,
-                p1.parentType(initializer),
                 thread,
                 p1.parent,
-                i.getTree(t).constraints(initializer).functionset,
-                p1.argposition,
-                size)
+                parent.species.primitiveset,
+                p1.argposition)
             
             # Check for depth and swap-compatibility limits
             res = self.verifyPoints(p2, p1)
@@ -156,7 +167,7 @@ class MutationPipeline(BreedingPipeline):
         
         if isinstance(self.sources[0], BreedingPipeline):
             # It's already a copy, so just modify the tree
-            j = i
+            j = parent
             if res:
                 p2.parent = p1.parent
                 p2.argposition = p1.argposition
@@ -167,23 +178,23 @@ class MutationPipeline(BreedingPipeline):
                 j.evaluated = False
         else:
             # Need to clone the individual
-            j = i.lightClone()
+            j = parent.lightClone()
             
             for x in range(j.getTreesLength()):
                 tree = j.getTree(x)
                 if x == t and res:
-                    tree = i.getTree(x).lightClone()
+                    tree = parent.getTree(x).lightClone()
                     tree.owner = j
-                    tree.child = i.getTree(x).child.cloneReplacingNoSubclone(p2, p1)
+                    tree.child = parent.getTree(x).child.cloneReplacingNoSubclone(p2, p1)
                     tree.child.parent = tree
                     tree.child.argposition = 0
                     j.setTree(x, tree)
                     j.evaluated = False
                 else:
-                    tree = i.getTree(x).lightClone()
+                    tree = parent.getTree(x).lightClone()
                     tree.owner = j
-                    tree.child = i.getTree(x).child.clone()
+                    tree.child = parent.getTree(x).child.clone()
                     tree.child.parent = tree
                     tree.child.argposition = 0
                     j.setTree(x, tree)
-        return j
+        return 1, [j]

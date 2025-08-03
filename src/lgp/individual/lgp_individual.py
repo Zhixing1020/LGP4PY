@@ -597,7 +597,8 @@ class LGPIndividual(GPIndividual):
             end = self.getTreesLength()
         return sum(1 for tree in self.getTreelist()[start:end] if tree.status)
     
-    # def canAddFlowOperator(self) -> bool:
+    def canAddFlowOperator(self) -> bool:
+        return True
     #     cnt = sum(1 for tree in self.getTreelist() if isinstance(tree.child.children[0], FlowOperator))
     #     return cnt / len(self.getTreelist()) <= self.rateFlowOperator
 
@@ -773,3 +774,7 @@ from dataclasses import dataclass
 @dataclass
 class AtomicInteger:
     value:int = 0
+
+@dataclass
+class LGPDefaults:
+    base:Parameter = Parameter("lgp")

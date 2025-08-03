@@ -15,52 +15,52 @@ class LGPSwapPipeline(LGPMicroMutationPipeline):
         super().__init__()
         self.stepSize = 0
         self.effflag = False
-        self.microMutation = None
+        self.microMutation:LGPMicroMutationPipeline = None
     
     def setup(self, state, base):
         super().setup(state, base)
         
-        def_ = LGPDefaults.base().push(self.SWAP)
+        def_ = LGPDefaults.base.push(self.SWAP)
         
         self.stepSize = state.parameters.getInt(
             base.push(self.P_STEP), 
-            def_.push(self.P_STEP), 1)
-        if self.stepSize == 0:
+            def_.push(self.P_STEP))
+        if self.stepSize < 1:
             state.output.fatal(
                 "LGPFreeMutation Pipeline has an invalid number of step size (it must be >= 1).",
                 base.push(self.P_STEP), def_.push(self.P_STEP))
         
         self.effflag = state.parameters.getBoolean(
             base.push(self.P_EFFFLAG),
-            def_.push(self.P_EFFFLAG), False)
+            def_.push(self.P_EFFFLAG), True)
         
         microbase = Parameter(state.parameters.getString(
             base.push(self.P_MICROMUTBASE),
             def_.push(self.P_MICROMUTBASE)))
         self.microMutation = None
-        if microbase.toString() != "null":
+        if str(microbase) != "null":
             self.microMutation = state.parameters.getInstanceForParameter(
                 microbase, def_.push(self.P_MICROMUTBASE), MutationPipeline)
             self.microMutation.setup(state, microbase)
     
-    def produce(self, min, max, start, subpopulation, inds, state, thread):
+    def produce(self, min, max, start, subpopulation, inds:list[LGPIndividual], state:EvolutionState, thread)->tuple[int, list[GPIndividual]]:
         # grab individuals from our source
         n = self.sources[0].produce(min, max, start, subpopulation, inds, state, thread)
 
         # should we bother?
-        if not state.random[thread].nextBoolean(self.likelihood):
-            return self.reproduce(n, start, subpopulation, inds, state, thread, False)
+        # if not state.random[thread].nextBoolean(self.likelihood):
+        #     return self.reproduce(n, start, subpopulation, inds, state, thread, False)
 
-        initializer = state.initializer
+        # initializer = state.initializer
         
         # now let's mutate them
         for q in range(start, n + start):
             i = inds[q]
-            inds[q] = self.produce_individual(subpopulation, i, state, thread)
+            inds[q] = self.produceIndividuals(subpopulation, i, state, thread)
         
         return n
     
-    def produce_individual(self, subpopulation, ind, state, thread):
+    def produceIndividuals(self, subpopulation, ind, state, thread):
         i = ind
         j = None
 
@@ -90,7 +90,7 @@ class LGPSwapPipeline(LGPMicroMutationPipeline):
             
             # perform the swaps
             for s in range(step):
-                t = self.get_legal_mutate_index(j, state, thread)
+                t = self.getLegalMutateIndex(j, state, thread)
                 des = min(t + 1, j.getTreesLength() - 1)
                 self.swap_instructions(j, t, des)
             
@@ -107,7 +107,7 @@ class LGPSwapPipeline(LGPMicroMutationPipeline):
         
         return j
     
-    def get_legal_mutate_index(self, ind, state, thread):
+    def getLegalMutateIndex(self, ind, state, thread):
         res = state.random[thread].nextInt(ind.getTreesLength() - 1)
         
         if self.effflag:

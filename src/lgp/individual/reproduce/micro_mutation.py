@@ -67,7 +67,7 @@ class LGPMicroMutationPipeline(MutationPipeline):
             state.output.fatal("LGPFreeMutation Pipeline has an invalid number of cons step (it must be > 0).",
                              base.push(self.P_CONSTSTEP), def_.push(self.P_CONSTSTEP))
     
-    def produce(self, min, max, start, subpopulation, inds:list[LGPIndividual], state:EvolutionState, thread)->tuple[int, list[GPIndividual]]:
+    def produce(self, min, max, start, subpopulation, inds:list[LGPIndividual], state:EvolutionState, thread)->int:
         # grab individuals from our source
         n = self.sources[0].produce(min, max, start, subpopulation, inds, state, thread)
 
@@ -78,25 +78,17 @@ class LGPMicroMutationPipeline(MutationPipeline):
         # initializer = state.initializer
         
         # now let's mutate them
-        res = []
         for q in range(start, n + start):
             i = inds[q]
-            _, tmp = self.produceIndividuals(_, _, _, subpopulation, _, state, thread, [i])
-            tmp[0].breedingPipe = self
-            inds[q] = tmp[0]
-            res.append(tmp[0])
+            inds[q] = self.produce_individual(subpopulation, i, state, thread)
 
-        return n, res
+        return n
 
     
-    def produceIndividuals(self, min:int, max:int, start:int, subpopulation:int, inds:list[GPIndividual], 
-                           state:EvolutionState, thread:int, parents:list[GPIndividual])->tuple[int, list[GPIndividual]]:
+    def produce_individual(self, subpopulation, ind, state, thread)-> LGPIndividual:
         # initializer = state.initializer
 
-        if len(parents) > 1:
-            state.output.warning("there are more than one parents for mutation, but we only use the first one")
-
-        parent = parents[0]
+        parent:LGPIndividual = ind
 
         if (self.tree != self.TREE_UNFIXED and 
             (self.tree < 0 or self.tree >= parent.getTreesLength())):
@@ -229,7 +221,8 @@ class LGPMicroMutationPipeline(MutationPipeline):
                 tree.child.argposition = 0
                 j.setTree(x, tree)
         
-        return 1, [j]
+        j.breedingPipe = self
+        return j
     
     def check_points(self, p1:GPNode, p2:GPNode, state:EvolutionState, thread:int, ind:LGPIndividual, treeStr:GPTreeStruct):
         res = False

@@ -70,7 +70,7 @@ class LGPMacroMutationPipeline(MutationPipeline):
                 microbase, def_.push(self.P_MICROMUTBASE), MutationPipeline)
             self.microMutation.setup(state, microbase)
     
-    def produce(self, min, max, start, subpopulation, inds:list[LGPIndividual], state:EvolutionState, thread)->tuple[int, list[GPIndividual]]:
+    def produce(self, min, max, start, subpopulation, inds:list[LGPIndividual], state:EvolutionState, thread)->int:
         # Grab individuals from our source
         n = self.sources[0].produce(min, max, start, subpopulation, inds, state, thread)
 
@@ -81,25 +81,17 @@ class LGPMacroMutationPipeline(MutationPipeline):
         # initializer = state.initializer
         
         # Now let's mutate them
-        res = []
         for q in range(start, n + start):
             i = inds[q]
-            _, tmp = self.produceIndividuals(_, _, _, subpopulation, _, state, thread, [i])
-            tmp[0].breedingPipe = self
-            inds[q] = tmp[0]
-            res.append(tmp[0])
+            inds[q] = self.produce_individual(subpopulation, i, state, thread)
 
-        return n, res
+        return n
 
     
-    def produceIndividuals(self, min:int, max:int, start:int, subpopulation:int, inds:list[GPIndividual], 
-                           state:EvolutionState, thread:int, parents:list[GPIndividual])->tuple[int, list[GPIndividual]]:
+    def produce_individual(self, subpopulation, ind, state, thread)->LGPIndividual:
         # initializer = state.initializer
-
-        if len(parents) > 1:
-            state.output.warning("there are more than one parents for mutation, but we only use the first one")
             
-        i:LGPIndividual = inds[0]
+        i:LGPIndividual = ind
 
         if (self.tree != self.TREE_UNFIXED and 
             (self.tree < 0 or self.tree >= i.getTreesLength())):
@@ -261,10 +253,10 @@ class LGPMacroMutationPipeline(MutationPipeline):
             j.removeIneffectiveInstr()
         elif self.mutateFlag in [self.EFFMACROMUT, self.FREEMACROMUT]:
             if self.microMutation is not None:
-                _, tmp = self.microMutation.produce(_, _, _, subpopulation, _, state, thread, [j])
-                j = tmp[0]
+                j = self.microMutation.produce(subpopulation, j, state, thread)
         
-        return 1, [j]
+        j.breedingPipe = self
+        return j
     
     def getLegalInsertIndex(self, ind:LGPIndividual, state:EvolutionState, thread):
         res = 0

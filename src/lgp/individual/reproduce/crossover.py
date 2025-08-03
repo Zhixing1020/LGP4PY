@@ -96,7 +96,7 @@ class CrossoverPipeline(BreedingPipeline):
 
         return True
 
-    def produce(self, min, max, start, subpopulation, inds:list[GPIndividual], state:EvolutionState, thread)->tuple[int, list[GPIndividual]]:
+    def produce(self, min, max, start, subpopulation, inds:list[GPIndividual], state:EvolutionState, thread)->int:
         n = self.typicalIndsProduced()
         if n < min:
             n = min
@@ -107,29 +107,24 @@ class CrossoverPipeline(BreedingPipeline):
         #     return self.reproduce(n, start, subpopulation, inds, state, thread, True)
 
         q = start
-        newinds = []
         while q < n + start:
             if self.sources[0] == self.sources[1]:
-                 _ , self.parents = self.sources[0].produce(2, 2, 0, subpopulation, self.parents, state, thread)
+                self.sources[0].produce(2, 2, 0, subpopulation, self.parents, state, thread)
             else:
-                self.parents[0] = self.sources[0].produce(1, 1, 0, subpopulation, self.parents, state, thread)[1][0]
-                self.parents[1] = self.sources[1].produce(1, 1, 1, subpopulation, self.parents, state, thread)[1][1]
+                self.sources[0].produce(1, 1, 0, subpopulation, self.parents, state, thread)
+                self.sources[1].produce(1, 1, 1, subpopulation, self.parents, state, thread)
 
             parent1 = self.parents[0]
             parent2 = self.parents[1]
 
-            nw, newinds_ = self.produceIndividuals(min, max, q, subpopulation, inds, state, thread, [parent1, parent2])
-            
+            nw = self.produceIndividuals(min, max, q, subpopulation, inds, state, thread, [parent1, parent2])
+
             q += nw
-            newinds.append( newinds_)
 
-            for ni in newinds_:
-                ni.breedingPipe = self
-
-        return n, newinds
+        return n
 
     def produceIndividuals(self, min, max, start, subpopulation, 
-                            inds, state:EvolutionState, thread, parents:list[GPIndividual])->tuple[int, list[GPIndividual]]:
+                            inds, state:EvolutionState, thread, parents:list[GPIndividual])->int:
         # How many individuals should we make?
         n = self.typicalIndsProduced()
         if n < min:
@@ -145,7 +140,6 @@ class CrossoverPipeline(BreedingPipeline):
         
         q = start
         parnt = 0
-        new_inds = []
         while q < n + start:
             # Check tree values validity
             if (self.tree1 != self.TREE_UNFIXED and 
@@ -259,12 +253,12 @@ class CrossoverPipeline(BreedingPipeline):
                         j2.setTree(x, tree)
             
             # Add the individuals to the population
+            j1.breedingPipe = self
             inds[q] = j1
-            new_inds.append(j1)
             q += 1
             if q < n + start and not self.tossSecondParent and j2 is not None:
+                j2.breedingPipe = self
                 inds[q] = j2
-                new_inds.append(j2)
                 q += 1
 
-        return n, new_inds
+        return n

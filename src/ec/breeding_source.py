@@ -46,7 +46,7 @@ class BreedingSource(ABC):
 
     @abstractmethod
     def produce(self, min:int, max:int, start:int, subpopulation:int, inds:list[GPIndividual], 
-                state:EvolutionState, thread:int)->tuple[int, list[GPIndividual]]:
+                state:EvolutionState, thread:int)->int:
         pass
 
     def clone(self):

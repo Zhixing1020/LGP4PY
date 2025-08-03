@@ -145,10 +145,6 @@ class BreedingPipeline(BreedingSource):
             if x == 0 or self.sources[x] != self.sources[x - 1]:
                 self.sources[x].finishProducing(state, subpopulation, thread)
 
-    @abstractmethod
-    def produceIndividuals(self, min, max, start, subpopulation, inds, state, thread, parents)->tuple[int, list[GPIndividual]]:
-        pass
-
     # def preparePipeline(self, hook):
     #     for source in self.sources:
     #         source.preparePipeline(hook)

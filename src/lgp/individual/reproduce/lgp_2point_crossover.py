@@ -93,7 +93,7 @@ class LGP2PointCrossoverPipeline(CrossoverPipeline):
         return True
     
     def produce(self, min, max, start, subpopulation, inds:list[GPIndividual], 
-                state:EvolutionState, thread)->tuple[int, list[GPIndividual]]:
+                state:EvolutionState, thread)->int:
         # how many individuals should we make?
         n = self.typicalIndsProduced()
         if n < min:
@@ -108,7 +108,7 @@ class LGP2PointCrossoverPipeline(CrossoverPipeline):
         # initializer = state.initializer
         
         q = start
-        newinds = []
+
         while q < n + start:
             # grab two individuals from our sources
             if self.sources[0] == self.sources[1]:
@@ -123,18 +123,14 @@ class LGP2PointCrossoverPipeline(CrossoverPipeline):
             parent1 = self.parents[0]
             parent2 = self.parents[1]
             
-            nw, newinds_ = self.produceIndividuals(min, max, q, subpopulation, inds, state, thread, [parent1, parent2])
+            nw = self.produceIndividuals(min, max, q, subpopulation, inds, state, thread, [parent1, parent2])
             
             q += nw
-            newinds.append( newinds_)
 
-            for ni in newinds_:
-                ni.breedingPipe = self
-
-        return n, newinds
+        return n
     
     def produceIndividuals(self, min, max, start, subpopulation, 
-                            inds, state:EvolutionState, thread, parents:list[GPIndividual])->tuple[int, list[GPIndividual]]:
+                            inds, state:EvolutionState, thread, parents:list[GPIndividual])->int:
         # how many individuals should we make?
         n = self.typicalIndsProduced()
         if n < min:
@@ -150,7 +146,6 @@ class LGP2PointCrossoverPipeline(CrossoverPipeline):
         
         q = start
         parnt = 0
-        new_inds = []
         while q < n + start:
             # check tree values validity
             if (self.tree1 != self.TREE_UNFIXED and 
@@ -243,9 +238,7 @@ class LGP2PointCrossoverPipeline(CrossoverPipeline):
             
             # Apply micro mutation if configured
             if self.microMutation is not None:
-                _, tmp = self.microMutation.produce(_, _, _, subpopulation, _, state, thread, [j1])
-                j1 = tmp[0]
-                # j1 = self.microMutation.produce(subpopulation, j1, state, thread)
+                j1 = self.microMutation.produce(subpopulation, j1, state, thread)
 
             if self.eff_flag:
                 j1.removeIneffectiveInstr()
@@ -270,9 +263,7 @@ class LGP2PointCrossoverPipeline(CrossoverPipeline):
                             j2.evaluated = False
                 
                 if self.microMutation is not None:
-                    _, tmp = self.microMutation.produce(_, _, _, subpopulation, _, state, thread, [j2])
-                    j2 = tmp[0]
-                    # j2 = self.microMutation.produce(subpopulation, j2, state, thread)
+                    j2 = self.microMutation.produce(subpopulation, j2, state, thread)
                 if self.eff_flag:
                     j2.removeIneffectiveInstr()
             
@@ -281,8 +272,8 @@ class LGP2PointCrossoverPipeline(CrossoverPipeline):
                 j1.getTreesLength() > j1.getMaxNumTrees()):
                 state.output.fatal("illegal tree number in linear cross j1")
             
+            j1.breedingPipe = self
             inds[q] = j1
-            new_inds.append(j1)
             q += 1
             parnt += 1
             
@@ -290,9 +281,9 @@ class LGP2PointCrossoverPipeline(CrossoverPipeline):
                 if (j2.getTreesLength() < j2.getMinNumTrees() or 
                     j2.getTreesLength() > j2.getMaxNumTrees()):
                     state.output.fatal("illegal tree number in linear cross j2")
+                j2.breedingPipe = self
                 inds[q] = j2
-                new_inds.append(j2)
                 q += 1
                 parnt += 1
         
-        return n, new_inds
+        return n

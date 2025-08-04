@@ -22,7 +22,7 @@ class SelectionMethod(BreedingSource, ABC):
         return
 
     def produce(self, min: int, max: int, start: int, subpopulation: int,
-                inds: list, state: EvolutionState, thread: int)->tuple[int, list[GPIndividual]]:
+                inds: list, state: EvolutionState, thread: int)->int:
         n = self.INDS_PRODUCED
         if n < min:
             n = min
@@ -32,10 +32,8 @@ class SelectionMethod(BreedingSource, ABC):
         for q in range(n):
             pos = self.produce_select(subpopulation, state, thread)
             inds[start + q] = state.population.subpops[subpopulation].individuals[pos]
-
-        res = [ind for ind in inds[start:start+n]]
         
-        return n, res
+        return n
 
     @abstractmethod
     def produce_select(self, subpopulation: int, state: EvolutionState, thread: int) -> int:

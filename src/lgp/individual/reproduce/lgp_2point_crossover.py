@@ -9,6 +9,7 @@ from .micro_mutation import LGPMicroMutationPipeline
 from .mutation import MutationPipeline
 from src.lgp.individual import *
 from src.lgp.individual.primitive import *
+import builtins
 
 
 class LGP2PointCrossoverPipeline(CrossoverPipeline):
@@ -177,32 +178,32 @@ class LGP2PointCrossoverPipeline(CrossoverPipeline):
                 t1 = (parnt + 1) % len(parents)
             
             # Select crossover points
-            begin1 = state.random[thread].randint(j1.getTreesLength())
-            pickNum1 = state.random[thread].randint(
-                min(j1.getTreesLength() - begin1, self.MaxSegLength)) + 1
+            begin1 = state.random[thread].randint(0, j1.getTreesLength()-1)
+            pickNum1 = state.random[thread].randint(0,
+                builtins.min(j1.getTreesLength() - begin1, self.MaxSegLength)-1) + 1
             
-            feasibleLowerB = max(0, begin1 - self.MaxDistanceCrossPoint)
-            feasibleUpperB = min(j2.getTreesLength() - 1, begin1 + self.MaxDistanceCrossPoint)
+            feasibleLowerB = builtins.max(0, begin1 - self.MaxDistanceCrossPoint)
+            feasibleUpperB = builtins.min(j2.getTreesLength() - 1, begin1 + self.MaxDistanceCrossPoint)
             
-            begin2 = feasibleLowerB + state.random[thread].randint(feasibleUpperB - feasibleLowerB + 1)
-            pickNum2 = 1 + state.random[thread].randint(
-                min(j2.getTreesLength() - begin2, self.MaxSegLength))
+            begin2 = feasibleLowerB + state.random[thread].randint(0, feasibleUpperB - feasibleLowerB)
+            pickNum2 = 1 + state.random[thread].randint(0, 
+                builtins.min(j2.getTreesLength() - begin2, self.MaxSegLength)-1)
             
             # Adjust segment lengths to meet length difference constraint
             eff = abs(pickNum1 - pickNum2) <= self.MaxLenDiffSeg
             if not eff:
                 if j2.getTreesLength() - begin2 > pickNum1 - self.MaxLenDiffSeg:
                     compensate = 1 if self.MaxLenDiffSeg == 0 else 0
-                    pickNum2 = max(1, pickNum1 - self.MaxLenDiffSeg) + state.random[thread].randint(
-                        min(self.MaxSegLength, 
-                            min(j2.getTreesLength() - begin2, pickNum1 + self.MaxLenDiffSeg)) - 
-                        max(0, pickNum1 - self.MaxLenDiffSeg) + compensate)
+                    pickNum2 = builtins.max(1, pickNum1 - self.MaxLenDiffSeg) + state.random[thread].randint(0, 
+                        builtins.min(self.MaxSegLength, 
+                            builtins.min(j2.getTreesLength() - begin2, pickNum1 + self.MaxLenDiffSeg)) - 
+                        builtins.max(0, pickNum1 - self.MaxLenDiffSeg) + compensate-1)
             
             # Ensure tree count constraints are met
             if pickNum1 <= pickNum2:
                 if (j2.getTreesLength() - (pickNum2 - pickNum1) < j2.getMinNumTrees() or
                     j1.getTreesLength() + (pickNum2 - pickNum1) > j1.getMaxNumTrees()):
-                    if state.random[thread].uniform() < 0.5:
+                    if state.random[thread].uniform(0,1) < 0.5:
                         pickNum1 = pickNum2
                     else:
                         pickNum2 = pickNum1
@@ -211,7 +212,7 @@ class LGP2PointCrossoverPipeline(CrossoverPipeline):
             else:
                 if (j2.getTreesLength() + (pickNum1 - pickNum2) > j2.getMaxNumTrees() or
                     j1.getTreesLength() - (pickNum1 - pickNum2) < j1.getMinNumTrees()):
-                    if state.random[thread].uniform() < 0.5:
+                    if state.random[thread].uniform(0,1) < 0.5:
                         pickNum2 = pickNum1
                     else:
                         pickNum1 = pickNum2
@@ -238,7 +239,7 @@ class LGP2PointCrossoverPipeline(CrossoverPipeline):
             
             # Apply micro mutation if configured
             if self.microMutation is not None:
-                j1 = self.microMutation.produce(subpopulation, j1, state, thread)
+                j1 = self.microMutation.produce_individual(subpopulation, j1, state, thread)
 
             if self.eff_flag:
                 j1.removeIneffectiveInstr()
@@ -263,7 +264,7 @@ class LGP2PointCrossoverPipeline(CrossoverPipeline):
                             j2.evaluated = False
                 
                 if self.microMutation is not None:
-                    j2 = self.microMutation.produce(subpopulation, j2, state, thread)
+                    j2 = self.microMutation.produce_individual(subpopulation, j2, state, thread)
                 if self.eff_flag:
                     j2.removeIneffectiveInstr()
             

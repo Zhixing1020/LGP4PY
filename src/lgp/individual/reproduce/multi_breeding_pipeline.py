@@ -12,7 +12,7 @@ class MultiBreedingPipeline(BreedingPipeline):
         super().__init__()
 
     def numSources(self):
-        return len(self.sources)
+        return self.DYNAMIC_SOURCES
     
     def setup(self, state:EvolutionState, base:Parameter):
         super().setup(state, base)
@@ -21,7 +21,7 @@ class MultiBreedingPipeline(BreedingPipeline):
 
     def defaultBase(self)->Parameter:
         # Placeholder: override as needed
-        return self.mybase.push(self.P_MULTIBREED)
+        return BreedDefault.base.push(self.P_MULTIBREED)
     
     def produce(self, min:int, max:int, start:int, subpopulation:int, inds:list[GPIndividual], 
                 state:EvolutionState, thread:int)->int:

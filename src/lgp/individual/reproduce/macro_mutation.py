@@ -117,13 +117,13 @@ class LGPMacroMutationPipeline(MutationPipeline):
             j.setTree(x, tree)
         
         # Perform mutations
-        pickNum = state.random[thread].randint(self.stepSize) + 1.0
+        pickNum = state.random[thread].randint(0, self.stepSize-1) + 1.0
         for _ in range(int(pickNum)):
-            t = state.random[thread].randint(j.getTreesLength())
+            t = state.random[thread].randint(0, j.getTreesLength()-1)
             
             # Insert new instruction
             if (j.getTreesLength() < j.getMaxNumTrees() and 
-                (state.random[thread].uniform() < self.probInsert or 
+                (state.random[thread].uniform(0, 1) < self.probInsert or 
                  j.getTreesLength() == j.getMinNumTrees())):
                 
                 t = self.getLegalInsertIndex(j, state, thread)
@@ -182,7 +182,7 @@ class LGPMacroMutationPipeline(MutationPipeline):
             
             # Delete instruction
             elif (j.getTreesLength() > j.getMinNumTrees() and
-                  (state.random[thread].uniform() < self.probInsert + self.probDelete or
+                  (state.random[thread].uniform(0, 1) < self.probInsert + self.probDelete or
                    j.getTreesLength() == j.getMaxNumTrees())):
                 
                 t = self.getLegalDeleteIndex(j, state, thread)
@@ -253,7 +253,7 @@ class LGPMacroMutationPipeline(MutationPipeline):
             j.removeIneffectiveInstr()
         elif self.mutateFlag in [self.EFFMACROMUT, self.FREEMACROMUT]:
             if self.microMutation is not None:
-                j = self.microMutation.produce(subpopulation, j, state, thread)
+                j = self.microMutation.produce_individual(subpopulation, j, state, thread)
         
         j.breedingPipe = self
         return j
@@ -261,13 +261,13 @@ class LGPMacroMutationPipeline(MutationPipeline):
     def getLegalInsertIndex(self, ind:LGPIndividual, state:EvolutionState, thread):
         res = 0
         if self.mutateFlag == self.FREEMACROMUT:
-            res = state.random[thread].randint(ind.getTreesLength())
+            res = state.random[thread].randint(0, ind.getTreesLength()-1)
         elif self.mutateFlag in [self.EFFMACROMUT, self.EFFMACROMUT2, self.EFFMACROMUT3]:
-            res = state.random[thread].randint(ind.getTreesLength())
+            res = state.random[thread].randint(0,ind.getTreesLength()-1)
             for x in range(self.numTries):
                 if len(ind.getTree(res).effRegisters) > 0:
                     break
-                res = state.random[thread].randint(ind.getTreesLength())
+                res = state.random[thread].randint(0,ind.getTreesLength()-1)
         else:
             state.output.fatal("illegal mutateFlag in LGP macro mutation")
         return res
@@ -275,13 +275,13 @@ class LGPMacroMutationPipeline(MutationPipeline):
     def getLegalDeleteIndex(self, ind:LGPIndividual, state:EvolutionState, thread):
         res = 0
         if self.mutateFlag in [self.FREEMACROMUT, self.EFFMACROMUT]:
-            res = state.random[thread].randint(ind.getTreesLength())
+            res = state.random[thread].randint(0,ind.getTreesLength()-1)
         elif self.mutateFlag in [self.EFFMACROMUT2, self.EFFMACROMUT3]:
-            res = state.random[thread].randint(ind.getTreesLength())
+            res = state.random[thread].randint(0,ind.getTreesLength()-1)
             for x in range(self.numTries):
                 if ind.getTree(res).status:
                     break
-                res = state.random[thread].randint(ind.getTreesLength())
+                res = state.random[thread].randint(0,ind.getTreesLength()-1)
         else:
             state.output.fatal("illegal mutateFlag in LGP macro mutation")
         return res
@@ -290,4 +290,4 @@ class LGPMacroMutationPipeline(MutationPipeline):
         if self.mutateFlag == self.FREEMACROMUT:
             return True
         return (p1.atDepth() == 0 and 
-                treeStr.effRegisters.contains(p2.getIndex()))
+                p2.getIndex() in treeStr.effRegisters)

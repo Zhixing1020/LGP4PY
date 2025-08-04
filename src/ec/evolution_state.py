@@ -3,10 +3,9 @@ from src.ec.util.parameter_database import ParameterDatabase
 from src.ec.util.parameter import Parameter
 from src.ec.util.output import Output
 
-import random
+from random import Random
 
 class EvolutionState:
-    # 
 
     # Run status codes
     R_SUCCESS: int = 0
@@ -30,16 +29,17 @@ class EvolutionState:
     P_BUILDER: str = "gp.tc.0.init"  # only for the initializer in the first tree constraint
     P_PRIMSET: str = "gp.fs"
 
-    def __init__(self, parameterPath:str):
+    def __init__(self):
         # ParameterDatabase
-        self.parameters = ParameterDatabase(parameterPath)
+        self.parameters = None
 
         self.output = Output()
 
-        self.random : [random] = [random] * 1
+        self.random : list[Random] = [Random] * 1
 
         self.breedthreads:int = 0
         self.evalthreads:int = 1
+        self.randomSeedOffset:int = 0
 
         self.generation = self.__class__.UNDEFINED
         self.numGenerations = 200
@@ -58,6 +58,9 @@ class EvolutionState:
         self.primitive_sets = None
 
         self.quitOnRunComplete = False
+
+        self.job: list[None] = None
+        self.runtimeArguments: list[str] = None
 
     def setup(self, base:str=""):
 
@@ -119,7 +122,7 @@ class EvolutionState:
 
         from src.ec.breeder import Breeder
         self.breeder = self.parameters.getInstanceForParameter(self.P_BREEDER, None, Breeder)
-        self.breeder.setup(self, self.P_BREEDER)
+        self.breeder.setup(self, Parameter(self.P_BREEDER))
 
         from src.ec.evaluator import Evaluator
         # Ensure the Evaluator is set up correctly

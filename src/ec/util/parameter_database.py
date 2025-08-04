@@ -66,6 +66,13 @@ class ParameterDatabase:
         return getattr(module, components[-1])()
 
     def exists(self, param:str, default:str=None)->bool:
+        if isinstance(param, Parameter):
+            param = str(param)
+        elif not isinstance(param, str):
+            raise ValueError(f"Parameter '{param}' is an unknow datatype {type(param)}")
+        if default is not None and isinstance(default, Parameter):
+            default = str(default)
+
         return param in self.params or default in self.params
     
 

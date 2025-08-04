@@ -70,12 +70,12 @@ class LGPNodeSelector(GPNodeSelector):
         self.nonterminals = self.nodes = self.constants = self.readregs = -1
     
     def pickNode(self, state:EvolutionState, subpopulation:int, thread:int, ind:LGPIndividual, tree:GPTreeStruct):
-        rnd = state.random[thread].uniform()
+        rnd = state.random[thread].uniform(0, 1)
         pick = GPNodeGather()
         if rnd > self.nonterminalProbability + self.constantProbability + self.readRegProbability + self.rootProbability:
             if self.nodes == -1:
                 self.nodes = tree.child.numNodes(GPNode.NODESEARCH_ALL)
-            tree.child.nodeInPosition(state.random[thread].randint(self.nodes), pick, GPNode.NODESEARCH_ALL)
+            tree.child.nodeInPosition(state.random[thread].randint(0, self.nodes-1), pick, GPNode.NODESEARCH_ALL)
             return pick.node
         
         elif rnd > self.nonterminalProbability + self.constantProbability + self.readRegProbability:
@@ -85,30 +85,30 @@ class LGPNodeSelector(GPNodeSelector):
             if self.constants == -1:
                 self.constants = tree.child.numNodes(GPNode.NODESEARCH_CONSTANT)
             if self.constants > 0:
-                tree.child.nodeInPosition(state.random[thread].randint(self.constants), pick, GPNode.NODESEARCH_CONSTANT)
+                tree.child.nodeInPosition(state.random[thread].randint(0, self.constants-1), pick, GPNode.NODESEARCH_CONSTANT)
                 return pick.node
             else:
                 if self.readregs == -1:
                     self.readregs = tree.child.numNodes(GPNode.NODESEARCH_READREG)
-                tree.child.nodeInPosition(state.random[thread].randint(self.readregs), pick, GPNode.NODESEARCH_READREG)
+                tree.child.nodeInPosition(state.random[thread].randint(0, self.readregs-1), pick, GPNode.NODESEARCH_READREG)
                 return pick.node
         
         elif rnd > self.nonterminalProbability:
             if self.readregs == -1:
                 self.readregs = tree.child.numNodes(GPNode.NODESEARCH_READREG)
             if self.readregs > 0:
-                tree.child.nodeInPosition(state.random[thread].randint(self.readregs), pick, GPNode.NODESEARCH_READREG)
+                tree.child.nodeInPosition(state.random[thread].randint(0, self.readregs-1), pick, GPNode.NODESEARCH_READREG)
                 return pick.node
             else:
                 self.constants = tree.child.numNodes(GPNode.NODESEARCH_CONSTANT)
-                tree.child.nodeInPosition(state.random[thread].randint(self.constants), pick, GPNode.NODESEARCH_CONSTANT)
+                tree.child.nodeInPosition(state.random[thread].randint(0, self.constants-1), pick, GPNode.NODESEARCH_CONSTANT)
                 return pick.node
         
         else:
             if self.nonterminals == -1:
                 self.nonterminals = tree.child.numNodes(GPNode.NODESEARCH_NONTERMINALS)
             if self.nonterminals > 0:
-                tree.child.nodeInPosition(state.random[thread].randint(self.nonterminals), pick, GPNode.NODESEARCH_NONTERMINALS)
+                tree.child.nodeInPosition(state.random[thread].randint(0, self.nonterminals-1), pick, GPNode.NODESEARCH_NONTERMINALS)
                 return pick.node
             else:
                 return tree.child

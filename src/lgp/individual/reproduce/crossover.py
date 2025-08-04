@@ -29,9 +29,12 @@ class CrossoverPipeline(BreedingPipeline):
     def defaultBase(self):
         return Parameter(self.P_CROSSOVER)
 
-    def num_sources(self):
+    def numSources(self):
         return self.NUM_SOURCES
 
+    def typicalIndsProduced(self):
+        return self.minChildProduction() if self.tossSecondParent else self.minChildProduction()*2
+    
     def setup(self, state, base):
         super().setup(state, base)
 
@@ -103,7 +106,7 @@ class CrossoverPipeline(BreedingPipeline):
         if n > max:
             n = max
 
-        # if not state.random[thread].uniform() < self.likelihood:
+        # if not state.random[thread].uniform(0, 1) < self.likelihood:
         #     return self.reproduce(n, start, subpopulation, inds, state, thread, True)
 
         q = start
@@ -162,13 +165,13 @@ class CrossoverPipeline(BreedingPipeline):
             t2 = 0
             if self.tree1 == self.TREE_UNFIXED or self.tree2 == self.TREE_UNFIXED:
                 if self.tree1 == self.TREE_UNFIXED:
-                    t1 = (state.random[thread].randint(parents[0].getTreesLength()) 
+                    t1 = (state.random[thread].randint(0, parents[0].getTreesLength()-1) 
                             if parents[0].getTreesLength() > 1 else 0)
                 else:
                     t1 = self.tree1
 
                 if self.tree2 == self.TREE_UNFIXED:
-                    t2 = (state.random[thread].randint(parents[1].getTreesLength()) 
+                    t2 = (state.random[thread].randint(0, parents[1].getTreesLength()-1) 
                             if parents[1].getTreesLength() > 1 else 0)
                 else:
                     t2 = self.tree2

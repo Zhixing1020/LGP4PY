@@ -109,8 +109,8 @@ class LGPMicroMutationPipeline(MutationPipeline):
             # need to clone the individual
             j = parent.lightClone()
         
-        # double pickNum = Math.max(state.random[thread].uniform()*(i.getTreesLength()), 1)
-        pickNum = state.random[thread].randint(self.stepSize) + 1.0
+        # double pickNum = Math.max(state.random[thread].uniform(0, 1)*(i.getTreesLength()), 1)
+        pickNum = state.random[thread].randint(0, self.stepSize-1) + 1.0
         for pick in range(int(pickNum)):
             t = self.getLegalMutateIndex(j, state, thread)
             
@@ -157,7 +157,9 @@ class LGPMicroMutationPipeline(MutationPipeline):
                     cnt = oriTree.child.numNodes(flag)
                 
                 if flag >= 0 and cnt > 0:
-                    p1 = oriTree.child.nodeInPosition(state.random[thread].randint(cnt), flag)
+                    pick = GPNodeGather()
+                    oriTree.child.nodeInPosition(state.random[thread].randint(0, cnt-1), pick, flag)
+                    p1 = pick.node
                 
                 # size = GPNodeBuilder.NOSIZEGIVEN
                 # if self.equalSize:
@@ -165,17 +167,17 @@ class LGPMicroMutationPipeline(MutationPipeline):
                 
                 if cnt > 0:
                     if self.componenttype == self.functions:
-                        p2 = set.nonterminals[state.random[thread].randint(len(set.nonterminals))].lightClone()
+                        p2 = set.nonterminals[state.random[thread].randint(0,len(set.nonterminals)-1)].lightClone()
                         p2.resetNode(state, thread)
                     elif self.componenttype == self.cons:
-                        if state.random[thread].uniform() < self.builder.probCons:
-                            p2 = set.constants[state.random[thread].randint(len(set.constants))].lightClone()
+                        if state.random[thread].uniform(0,1) < self.builder.probCons:
+                            p2 = set.constants[state.random[thread].randint(0,len(set.constants)-1)].lightClone()
                             p2.resetNode(state, thread)
                         else:
-                            p2 = set.nonconstants[state.random[thread].randint(len(set.nonconstants))].lightClone()
+                            p2 = set.nonconstants[state.random[thread].randint(0,len(set.nonconstants)-1)].lightClone()
                             p2.resetNode(state, thread)
                     elif self.componenttype == self.writereg:
-                        p2 = set.registers[state.random[thread].randint(len(set.registers))].lightClone()
+                        p2 = set.registers[state.random[thread].randint(0,len(set.registers)-1)].lightClone()
                         p2.resetNode(state, thread)
                     elif self.componenttype == self.readreg:
                         p2 = self.builder.newRootedTree(
@@ -233,7 +235,7 @@ class LGPMicroMutationPipeline(MutationPipeline):
                     if p1.atDepth() == 0 and not p2.getIndex() in treeStr.effRegisters:
                         # guarantee effectiveness
                         eff_list = list(treeStr.effRegisters)
-                        p2.setIndex(eff_list[state.random[thread].randint(len(eff_list))])
+                        p2.setIndex(eff_list[state.random[thread].randint(0,len(eff_list)-1)])
                         if str(p1) == str(p2) and len(treeStr.effRegisters) > 1:
                             res = False
                         else:
@@ -247,9 +249,9 @@ class LGPMicroMutationPipeline(MutationPipeline):
                 if isinstance(p1, ConstantGPNode) and isinstance(p2, ConstantGPNode):
                     if abs(p1.getValue() - p2.getValue()) > self.cons_step:
                         if p1.getValue() - p2.getValue() > 0:
-                            p2.setValue(p1.getValue() - 1 - state.random[thread].randint(self.cons_step - 1))
+                            p2.setValue(p1.getValue() - 1 - state.random[thread].randint(0,self.cons_step - 1))
                         else:
-                            p2.setValue(p1.getValue() + 1 + state.random[thread].randint(self.cons_step - 1))
+                            p2.setValue(p1.getValue() + 1 + state.random[thread].randint(0,self.cons_step - 1))
                     res = True
                 
                 # further check for flow operator
@@ -262,33 +264,33 @@ class LGPMicroMutationPipeline(MutationPipeline):
         return res
     
     def getLegalMutateIndex(self, ind:LGPIndividual, state:EvolutionState, thread:int):
-        res = state.random[thread].randint(ind.getTreesLength())
+        res = state.random[thread].randint(0,ind.getTreesLength()-1)
         
         if self.effflag:  # guarantee effectiveness
             if self.componenttype != self.cons:
                 for x in range(self.numTries):
                     if ind.getTree(res).status:
                         break
-                    res = state.random[thread].randint(ind.getTreesLength())
+                    res = state.random[thread].randint(0,ind.getTreesLength()-1)
             else:
                 for x in range(self.numTries):
                     if (ind.getTree(res).status and 
                         ind.getTree(res).child.numNodes(GPNode.NODESEARCH_CONSTANT) > 0):
                         break
-                    res = state.random[thread].randint(ind.getTreesLength())
+                    res = state.random[thread].randint(0,ind.getTreesLength()-1)
         else:
             if self.componenttype == self.cons:
                 for x in range(self.numTries):
                     if ind.getTree(res).child.numNodes(GPNode.NODESEARCH_CONSTANT) > 0:
                         break
-                    res = state.random[thread].randint(ind.getTreesLength())
+                    res = state.random[thread].randint(0,ind.getTreesLength()-1)
         
         return res
     
     def randomGetComponentType(self, state, thread):
-        rnd = state.random[thread].uniform()
+        rnd = state.random[thread].uniform(0,1)
         if rnd > self.p_function + self.p_constant + self.p_writereg + self.p_readreg:
-            self.componenttype = state.random[thread].randint(4)
+            self.componenttype = state.random[thread].randint(0, 3)
         elif rnd > self.p_constant + self.p_writereg + self.p_readreg:
             self.componenttype = self.functions
         elif rnd > self.p_writereg + self.p_readreg:

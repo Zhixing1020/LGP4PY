@@ -63,8 +63,8 @@ class BreedingPipeline(BreedingSource):
     def typicalIndsProduced(self)->int:
         return self.maxChildProduction()
 
-    def defaultBase(self)->Parameter:
-        return self.mybase
+    # def defaultBase(self)->Parameter:
+    #     return self.mybase
 
     def setup(self, state:EvolutionState, base:Parameter):
         super().setup(state, base)
@@ -78,12 +78,16 @@ class BreedingPipeline(BreedingSource):
         #     state.output.fatal(f"Breeding Pipeline likelihood must be between 0.0 and 1.0 inclusive for"
         #                        +f"{base.push(self.P_LIKELIHOOD)} or {def_.push(self.P_LIKELIHOOD)}")
         
-        numsources = state.parameters.getInt(base.push(self.P_NUMSOURCES), def_.push(self.P_NUMSOURCES), 0)
-        if numsources < 0:
-            state.output.fatal("Breeding pipeline num-sources must exist and be >= 0",
-                                base.push(self.P_NUMSOURCES), def_.push(self.P_NUMSOURCES))
+        numsources = self.numSources()
+
+        if numsources == self.DYNAMIC_SOURCES:
+            numsources = state.parameters.getIntWithDefault(base.push(self.P_NUMSOURCES), def_.push(self.P_NUMSOURCES), 0)
+            if numsources < 0:
+                state.output.fatal("Breeding pipeline num-sources must exist and be >= 0",
+                                    base.push(self.P_NUMSOURCES), def_.push(self.P_NUMSOURCES))
 
         self.sources = [None] * numsources
+        self.operatorRate = [None] * numsources
         for x in range(numsources):
             p = base.push(self.P_SOURCE).push(str(x))
             d = def_.push(self.P_SOURCE).push(str(x))
@@ -95,7 +99,7 @@ class BreedingPipeline(BreedingSource):
             else:
                 self.sources[x] = state.parameters.getInstanceForParameter(p, d, BreedingSource)
                 self.sources[x].setup(state, p)
-                self.operatorRate[x] = state.parameters.getDoubleWithDefault(p.push(self.P_PROB), d.push(self.P_PROB))
+                self.operatorRate[x] = state.parameters.getDoubleWithDefault(p.push(self.P_PROB), d.push(self.P_PROB),  0.0)
 
 
     def clone(self):

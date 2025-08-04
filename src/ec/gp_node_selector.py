@@ -68,7 +68,7 @@ class GPNodeSelector:
             if self.nodes == -1:
                 self.nodes = tree.child.numNodes(GPNodeType)
             if self.nodes > 0:
-                tree.child.nodeInPosition(state.random[thread].randint(0, self.nodes), pick, GPNodeType)
+                tree.child.nodeInPosition(state.random[thread].randint(0, self.nodes-1), pick, GPNodeType)
                 return pick.node
             else: #  there ARE no the type of GPNode!  simply return the root node
                 return tree.child
@@ -77,7 +77,7 @@ class GPNodeSelector:
         if rnd > self.nonterminalProbability + self.terminalProbability + self.rootProbability:
             if self.nodes == -1:
                 self.nodes = tree.child.numNodes(GPNode.NODESEARCH_ALL)
-            tree.child.nodeInPosition(state.random[thread].randint(0, self.nodes), pick, GPNode.NODESEARCH_ALL)
+            tree.child.nodeInPosition(state.random[thread].randint(0, self.nodes-1), pick, GPNode.NODESEARCH_ALL)
             return pick.node
         
         elif rnd > self.nonterminalProbability + self.terminalProbability:
@@ -86,13 +86,13 @@ class GPNodeSelector:
         elif rnd > self.nonterminalProbability:
             if self.terminals == -1:
                 self.terminals = tree.child.numNodes(GPNode.NODESEARCH_TERMINALS)
-            tree.child.nodeInPosition(state.random[thread].randint(0, self.terminals), pick, GPNode.NODESEARCH_TERMINALS)
+            tree.child.nodeInPosition(state.random[thread].randint(0, self.terminals-1), pick, GPNode.NODESEARCH_TERMINALS)
             return pick.node
         else:
             if self.nonterminals == -1:
                 self.nonterminals = tree.child.numNodes(GPNode.NODESEARCH_NONTERMINALS)
             if self.nonterminals > 0:
-                tree.child.nodeInPosition(state.random[thread].randint(0, self.nonterminals), pick, GPNode.NODESEARCH_NONTERMINALS)
+                tree.child.nodeInPosition(state.random[thread].randint(0, self.nonterminals-1), pick, GPNode.NODESEARCH_NONTERMINALS)
                 return pick.node
             else:
                 return tree.child

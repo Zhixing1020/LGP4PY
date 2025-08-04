@@ -43,7 +43,7 @@ class LGPSwapPipeline(LGPMicroMutationPipeline):
                 microbase, def_.push(self.P_MICROMUTBASE), MutationPipeline)
             self.microMutation.setup(state, microbase)
     
-    def produce(self, min, max, start, subpopulation, inds:list[LGPIndividual], state:EvolutionState, thread)->tuple[int, list[GPIndividual]]:
+    def produce(self, min, max, start, subpopulation, inds:list[LGPIndividual], state:EvolutionState, thread)->int:
         # grab individuals from our source
         n = self.sources[0].produce(min, max, start, subpopulation, inds, state, thread)
 
@@ -56,13 +56,13 @@ class LGPSwapPipeline(LGPMicroMutationPipeline):
         # now let's mutate them
         for q in range(start, n + start):
             i = inds[q]
-            inds[q] = self.produceIndividuals(subpopulation, i, state, thread)
+            inds[q] = self.produce_individual(subpopulation, i, state, thread)
         
         return n
     
-    def produceIndividuals(self, subpopulation, ind, state, thread):
-        i = ind
-        j = None
+    def produce_individual(self, subpopulation, ind, state:EvolutionState, thread)->LGPIndividual:
+        i:LGPIndividual = ind
+        j:LGPIndividual = None
 
         if isinstance(self.sources[0], BreedingPipeline):
             # it's already a copy
@@ -86,7 +86,7 @@ class LGPSwapPipeline(LGPMicroMutationPipeline):
             old_effrate = j.getEffTreesLength() / j.getTreesLength()
             
             # get the swap step size
-            step = state.random[thread].nextInt(self.stepSize) + 1
+            step = state.random[thread].randint(0, self.stepSize-1) + 1
             
             # perform the swaps
             for s in range(step):
@@ -103,32 +103,32 @@ class LGPSwapPipeline(LGPMicroMutationPipeline):
                 break
         
         if self.microMutation is not None:
-            j = self.microMutation.produce(subpopulation, j, state, thread)
+            j = self.microMutation.produce_individual(subpopulation, j, state, thread)
         
         return j
     
     def getLegalMutateIndex(self, ind, state, thread):
-        res = state.random[thread].nextInt(ind.getTreesLength() - 1)
+        res = state.random[thread].randint(0, ind.getTreesLength() - 1)
         
         if self.effflag:
             # guarantee the effectiveness of the selected instruction
             for x in range(self.numTries):
-                if ind.getTreeStruct(res).status:
+                if ind.getTree(res).status:
                     break
-                res = state.random[thread].nextInt(ind.getTreesLength())
+                res = state.random[thread].randint(0, ind.getTreesLength() - 1)
         
         return res
     
-    def move_instruction(self, ind, src, des):
+    def move_instruction(self, ind:LGPIndividual, src, des):
         """Move instruction from src index to des index"""
-        instr = ind.getTreeStruct(src)
+        instr = ind.getTree(src)
         ind.removeTree(src)
         ind.addTree(des, instr)
     
-    def swap_instructions(self, ind, p1, p2):
+    def swap_instructions(self, ind:LGPIndividual, p1, p2):
         """Swap instructions at positions p1 and p2"""
-        instr1 = ind.getTreeStruct(p1)
-        instr2 = ind.getTreeStruct(p2)
+        instr1 = ind.getTree(p1)
+        instr2 = ind.getTree(p2)
         
         ind.setTree(p1, instr2)
         ind.setTree(p2, instr1)

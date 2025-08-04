@@ -30,7 +30,7 @@ class Breeder:
 
     def setup(self, state:EvolutionState, base:Parameter):
         p = Parameter(state.P_POP).push(Population.P_SIZE)
-        default_p = self.BreederDefault()
+        default_p = BreedDefault.base
 
         size = state.parameters.getInt(p, None)
 
@@ -39,10 +39,11 @@ class Breeder:
 
         for x in range(size): # for each subpopulation
             # load the elite settings
-            if state.parameters.exists(base.push(self.P_ELITE).push(""+str(x)), default_p.push(self.P_ELITE).push(""+str(x))):
+
+            if state.parameters.exists(base.push(self.P_ELITE).push(str(x)), default_p.push(self.P_ELITE).push(str(x))):
                 self.elitenum[x] = state.parameters.getInt(
-                    base.push(self.P_ELITE).push(""+str(x)), 
-                    default_p.push(self.P_ELITE).push(""+str(x)))
+                    base.push(self.P_ELITE).push(str(x)), 
+                    default_p.push(self.P_ELITE).push(str(x)))
             else:
                 self.elitenum[x] = 1
             
@@ -77,11 +78,13 @@ class Breeder:
 
             while x < numind_i:
                 for tryi in range(self.max_tries):
-                    tmp_x, res_inds = bp.produce(
+                    tmp_x = bp.produce(
                         1,numind_i-x,x,subpop_i,
                         subp.individuals,
                         state,0
                     )
+
+                    res_inds = subp.individuals[x : x+tmp_x]
 
                     exist = False # no duplication
                     if subp.numDuplicateRetries >= 1: # use subpopulation.duplicateSet to eliminate duplicate individuals
@@ -131,8 +134,8 @@ class Breeder:
                     length = len( newpop.subpops[x].individuals )
                     newpop.subpops[x].individuals[length - e - 1].evaluated = False
 
-    def BreederDefault(self)->Parameter:
-        return Parameter(self.P_BREEDER)
+    # def BreederDefault(self)->Parameter:
+    #     return Parameter(self.P_BREEDER)
                  
 
 def compare(a:GPIndividual, b:GPIndividual):
@@ -141,3 +144,9 @@ def compare(a:GPIndividual, b:GPIndividual):
     elif b.fitness.betterThan(a.fitness):
         return -1
     return 0
+
+
+from dataclasses import dataclass
+@dataclass
+class BreedDefault:
+    base:Parameter = Parameter("breed")

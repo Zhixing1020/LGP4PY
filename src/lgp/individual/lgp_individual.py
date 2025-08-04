@@ -146,6 +146,7 @@ class LGPIndividual(GPIndividual):
 
 
     def rebuildIndividual(self, state, thread):
+
         numtrees = state.random[thread].randint(self.initMinNumTrees, self.initMaxNumTrees)
 
         self.treelist.clear()
@@ -338,7 +339,7 @@ class LGPIndividual(GPIndividual):
         self.batchsize = obj.batchsize
         self.eff_initialize = obj.eff_initialize
         self.setRegisters(obj.getRegisters())
-
+        self.species = obj.species
         # self.flowctrl = LGPFlowController()
         # self.maxIterTimes = obj.getFlowController().maxIterTimes
         # self.flowctrl.maxIterTimes = self.maxIterTimes
@@ -626,7 +627,7 @@ class LGPIndividual(GPIndividual):
 
         if len(predict_list) > MAX_SAMPLE:
             for s in range(MAX_SAMPLE):
-                ind = state.random[thread].randint(len(predict_list))
+                ind = state.random[thread].randint(0, len(predict_list)-1)
                 indices[s] = ind
                 predict[s] = predict_list[ind]
         else:

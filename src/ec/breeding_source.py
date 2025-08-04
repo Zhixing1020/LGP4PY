@@ -59,3 +59,6 @@ class BreedingSource(ABC):
 
     def __str__(self):
         return self.__class__.__name__
+    
+    def defaultBase(self)->Parameter:
+        return Parameter("")

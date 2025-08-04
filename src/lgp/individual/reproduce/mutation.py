@@ -123,7 +123,7 @@ class MutationPipeline(BreedingPipeline):
 
         # Pick random tree
         if self.tree == self.TREE_UNFIXED:
-            t = state.random[thread].randint(parent.getTreesLength()) if parent.getTreesLength() > 1 else 0
+            t = state.random[thread].randint(0, parent.getTreesLength()-1) if parent.getTreesLength() > 1 else 0
         else:
             t = self.tree
 

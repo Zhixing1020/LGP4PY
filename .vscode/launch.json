@@ -9,7 +9,12 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/src/lgp.py",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "args": [
+                "-file", 
+                "${workspaceFolder}/tasks/Symbreg/parameters/LGP_test.params",
+                "-p seed.0=7"
+            ]
         }
     ]
 }

@@ -8,9 +8,9 @@ evalthreads = 1
 breedthreads = 1
 jobs = 1
 seed.0 = 4
-checkpoint = false
-checkpoint-modulo = 1
-checkpoint-prefix = ec
+# checkpoint = false
+# checkpoint-modulo = 1
+# checkpoint-prefix = ec
 
 # ==============================
 # Basic evolution parameters
@@ -86,7 +86,7 @@ pop.subpop.0.duplicate-retries = 100
 init = ec.gp.GPInitializer
 
 # GP breeding pipeline
-pop.subpop.0.species.pipe = src.ec.Breeder
+pop.subpop.0.species.pipe = src.lgp.individual.reproduce.MultiBreedingPipeline
 pop.subpop.0.species.pipe.generate-max = false
 pop.subpop.0.species.pipe.num-sources = 5
 pop.subpop.0.species.pipe.source.0 = src.lgp.individual.reproduce.LGPMicroMutationPipeline
@@ -110,15 +110,15 @@ pop.subpop.0.species.pipe.source.4.micro_base = pop.subpop.0.species.pipe.source
 pop.subpop.0.species.pipe.source.4.prob = 0.0
 
 # Selection for reproduction
-breed.reproduce.source.0 = ec.select.TournamentSelection
+breed.reproduce.source.0 = src.lgp.individual.reproduce.TournamentSelection
 
-# Koza crossover parameters -- we regard each instruction as a tree
-gp.koza.xover.source.0 = ec.select.TournamentSelection
-gp.koza.xover.source.1 = same
-gp.koza.xover.ns.0 = zhixing.cpxInd.individual.reproduce.LGPNodeSelector
-gp.koza.xover.ns.1 = same
-gp.koza.xover.maxdepth = 3
-gp.koza.xover.tries = 50
+# crossover parameters -- we regard each instruction as a tree
+xover.source.0 = src.lgp.individual.reproduce.TournamentSelection
+xover.source.1 = same
+xover.ns.0 = src.lgp.individual.reproduce.LGPNodeSelector
+xover.ns.1 = same
+xover.maxdepth = 3
+xover.tries = 50
 
 #LGP 2-point crossover parameters
 lgp.2pcross.maxseglength = 60
@@ -126,12 +126,12 @@ lgp.2pcross.maxlendiffseg = 10
 lgp.2pcross.maxdistancecrosspoint = 60
 lgp.2pcross.effective = false
 
-# Koza mutation parameters
-gp.koza.mutate.source.0 = ec.select.TournamentSelection
-gp.koza.mutate.ns.0 = zhixing.cpxInd.individual.reproduce.LGPNodeSelector
-gp.koza.mutate.build.0 = zhixing.cpxInd.individual.reproduce.LGPMutationGrowBuilder
-gp.koza.mutate.maxdepth = 3
-gp.koza.mutate.tries = 50
+# mutation parameters
+mutate.source.0 = src.lgp.individual.reproduce.TournamentSelection
+mutate.ns.0 = src.lgp.individual.reproduce.LGPNodeSelector
+mutate.build.0 = src.ec.GPBuilder
+mutate.maxdepth = 3
+mutate.tries = 50
 
 #LGP free (micro) mutation parameters
 #lgp.freemut.step = 1

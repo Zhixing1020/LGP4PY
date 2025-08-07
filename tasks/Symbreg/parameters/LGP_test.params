@@ -20,9 +20,9 @@ finish = ec.simple.SimpleFinisher
 exch = ec.simple.SimpleExchanger
 breed =	src.ec.Breeder
 eval = src.ec.Evaluator
-stat = ec.simple.SimpleStatistics
+stat = src.ec.SimpleStatistics
 stat.file = $out.stat
-stat.num-children = 1
+stat.num-children = 0
 stat.child.0 = zhixing.symbolicregression.statistics.LGP4SRstatistics
 stat.child.0.file = $outtabular.stat
 

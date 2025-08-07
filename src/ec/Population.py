@@ -3,6 +3,7 @@
 from src.ec.evolution_state import EvolutionState
 from src.ec.util.parameter import Parameter
 # from typing import List
+from src.ec.subpopulation import Subpopulation
 
 class Population:
 
@@ -10,7 +11,7 @@ class Population:
     P_SUBPOP = "subpop"
 
     def __init__(self):
-        self.subpops = [None]
+        self.subpops:list[Subpopulation] = [None]
 
     def clear(self):
         for subp in self.subpops:

@@ -82,7 +82,7 @@ class GPIndividual(ABC):
 
         return res
     
-    def printIndividualForHuman(self)->str:
+    def printIndividualForHuman(self, state:EvolutionState)->str:
         res = ""
         res += self.EVALUATED_PREAMBLE + ("true" if self.evaluated else "false") + "\n"
         res += "Fitness: " + str(self.fitness) + "\n"
@@ -100,7 +100,7 @@ class GPIndividual(ABC):
         myobj.treelist = [tree.clone() for tree in self.treelist]
         myobj.towrap = self.towrap
         myobj.batchsize = self.batchsize
-        myobj.breedingPipe = None # None because this individual is produced by clone() rather than breeding pipeline
+        myobj.breedingPipe = self.breedingPipe 
         for tree in myobj.treelist:
             tree.owner = myobj
         myobj.evaluated = self.evaluated
@@ -112,7 +112,7 @@ class GPIndividual(ABC):
         myobj.treelist = [tree.lightClone() for tree in self.treelist]
         myobj.towrap = self.towrap
         myobj.batchsize = self.batchsize
-        myobj.breedingPipe = None # None because this individual is produced by clone() rather than breeding pipeline
+        myobj.breedingPipe = self.breedingPipe
         for tree in myobj.treelist:
             tree.owner = myobj
         myobj.evaluated = self.evaluated

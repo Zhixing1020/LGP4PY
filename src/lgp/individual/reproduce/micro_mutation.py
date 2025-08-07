@@ -260,6 +260,7 @@ class LGPMicroMutationPipeline(MutationPipeline):
                 
                 for c in range(len(p1.children)):
                     p2.children[c] = p1.children[c].clone()
+                    p2.children[c].parent = p2
         
         return res
     

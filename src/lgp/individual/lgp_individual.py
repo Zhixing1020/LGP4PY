@@ -292,18 +292,16 @@ class LGPIndividual(GPIndividual):
         for x, tree in enumerate(self.treelist):
             if not tree.status:
                 res += "//"
-            res += (f"Ins {x}:\t")
-            res += str(tree)
+            res += (f"Ins {x}:\t{str(tree)}\n")
 
         if self.towrap:
             length = len(self.treelist)
             for x, tree in enumerate(self.wraplist):
-                res += (f"Ins {x+length}:\t")
-                res += str(tree) + "\n"
+                res += (f"Ins {x+length}:\t{str(tree)}\n")
         
         return res
     
-    def printIndividualForHumans(self, state: 'EvolutionState')->str:
+    def printIndividualForHuman(self, state: 'EvolutionState')->str:
         res = self.EVALUATED_PREAMBLE + ("true" if self.evaluated else "false") + "\n"
         res += str( self.fitness ) + "\n"
         res += self.printTrees(state)

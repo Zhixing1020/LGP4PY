@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from src.ec.util.parameter import Parameter
-from src.ec.population import Population
+# from src.ec.population import Population
 from src.ec.evolution_state import EvolutionState
 from src.ec.gp_individual import GPIndividual
 from src.ec.breeding_source import BreedingSource

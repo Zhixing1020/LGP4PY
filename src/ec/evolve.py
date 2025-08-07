@@ -193,12 +193,13 @@ Format:
         seeds = []
         
         # Handle silent/muzzle
-        # if parameters.getString(Evolve.P_MUZZLE, "").lower() == "true":
-        #     output.warning(f"{Evolve.P_MUZZLE} has been deprecated. We suggest you use {Evolve.P_SILENT} or similar newer options.")
+        if parameters.exists(Evolve.P_MUZZLE) and parameters.getString(Evolve.P_MUZZLE, "").lower() == "true":
+            output.warning(f"{Evolve.P_MUZZLE} has been deprecated. We suggest you use {Evolve.P_SILENT} or similar newer options.")
         
-        # if (parameters.getString(Evolve.P_SILENT, "").lower() == "true" or
-        #     parameters.getString(Evolve.P_MUZZLE, "").lower() == "true"):
-        #     output.silent = True
+        if (parameters.exists(Evolve.P_SILENT) and parameters.getString(Evolve.P_SILENT, "").lower() == "true" 
+            or
+            parameters.exists(Evolve.P_MUZZLE) and parameters.getString(Evolve.P_MUZZLE, "").lower() == "true"):
+            output.silent = True
 
         output.message("Linear Genetic Programming on Evolutionary Computation Framework (Python)")
                 

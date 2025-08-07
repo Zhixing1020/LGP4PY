@@ -30,8 +30,11 @@ class EvolutionState:
     P_PRIMSET: str = "gp.fs"
 
     def __init__(self):
+        from src.ec import Statistics
+        from src.ec.breeder import Breeder
+
         # ParameterDatabase
-        self.parameters = None
+        self.parameters:ParameterDatabase = None
 
         self.output = Output()
 
@@ -51,8 +54,8 @@ class EvolutionState:
         self.population = None  # will be a Population instance
         self.evaluator = None  # Evaluator instance
         # self.initializer = None  # Initializer instance
-        self.breeder = None  # Breeder instance
-        self.statistics = None  # Statistics instance
+        self.breeder:Breeder = None  # Breeder instance
+        self.statistics:Statistics = None  # Statistics instance
 
         self.builder = None
         self.primitive_sets = None
@@ -131,8 +134,9 @@ class EvolutionState:
         self.evaluator:Evaluator = self.parameters.getInstanceForParameter(self.P_EVALUATOR, None, Evaluator)
         self.evaluator.setup(self, Parameter(self.P_EVALUATOR))
 
-        # self.statistics = self.parameters.getInstanceForParameterEq(self.P_STATISTICS, None, Statistics)
-        # self.statistics.setup(self, self.P_STATISTICS)
+        from src.ec.statistics import Statistics
+        self.statistics = self.parameters.getInstanceForParameter(self.P_STATISTICS, None, Statistics)
+        self.statistics.setup(self, Parameter(self.P_STATISTICS))
 
         # self.exchanger = self.parameters.getInstanceForParameter(self.P_EXCHANGER, None, Exchanger)
         # self.exchanger.setup(self, self.P_EXCHANGER)
@@ -166,9 +170,9 @@ class EvolutionState:
 
     def finish(self, result: int):
         self.statistics.finalStatistics(self, result)
-        self.finisher.finishPopulation(self, result)
+        # self.finisher.finishPopulation(self, result)
         # self.exchanger.closeContacts(self, result)
-        self.evaluator.closeContacts(self, result)
+        # self.evaluator.closeContacts(self, result)
 
     def startFresh(self):
         self.output.message("Setting up")
@@ -176,10 +180,10 @@ class EvolutionState:
 
         # POPULATION INITIALIZATION
         self.output.message("Initializing Generation 0")
-        # self.statistics.preInitializationStatistics(self)
+        self.statistics.preInitializationStatistics(self)
         # self.population = self.initializer.initialPopulation(self, 0)
         self.population.populate(self, 0)
-        # self.statistics.postInitializationStatistics(self)
+        self.statistics.postInitializationStatistics(self)
 
         # Compute generations from evaluations if necessary
         if self.numEvaluations > self.UNDEFINED:
@@ -208,9 +212,9 @@ class EvolutionState:
             self.output.message(f"Generation {self.generation}")
 
         # EVALUATION
-        # self.statistics.preEvaluationStatistics(self)
+        self.statistics.preEvaluationStatistics(self)
         self.evaluator.evaluatePopulation(self)
-        # self.statistics.postEvaluationStatistics(self)
+        self.statistics.postEvaluationStatistics(self)
 
         # SHOULD WE QUIT?
         if self.evaluator.runComplete(self) and self.quitOnRunComplete:
@@ -231,9 +235,9 @@ class EvolutionState:
         #     return self.R_SUCCESS
 
         # BREEDING
-        # self.statistics.preBreedingStatistics(self)
+        self.statistics.preBreedingStatistics(self)
         self.population = self.breeder.breedPopulation(self)
-        # self.statistics.postBreedingStatistics(self)
+        self.statistics.postBreedingStatistics(self)
 
         # POST-BREEDING EXCHANGING
         # self.statistics.prePostBreedingExchangeStatistics(self)

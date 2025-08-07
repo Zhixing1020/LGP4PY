@@ -17,6 +17,8 @@ from .breeding_pipeline import BreedingPipeline
 from .selection_method import SelectionMethod
 from .gp_species import GPSpecies
 from .evolve import Evolve
+from .statistics import Statistics
+from .simple_statistics import SimpleStatistics
 
 __author__ = "Zhixing Huang"
 __all__ = [
@@ -40,6 +42,8 @@ __all__ = [
     "GPTree",
     "Population",
     "Subpopulation",
-    "Evolve"
+    "Evolve",
+    "Statistics",
+    "SimpleStatistics"
 ]
 

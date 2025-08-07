@@ -12,7 +12,7 @@ class Subpopulation:
     P_SPECIES = "species"
 
     def __init__(self):
-        self.individuals = []
+        self.individuals:list[GPIndividual] = []
         self.numDuplicateRetries = 0
         self.species = None
         self.duplicateSet:Set[str] = None
@@ -50,7 +50,7 @@ class Subpopulation:
         if self.numDuplicateRetries < 0:
             state.output.fatal("Duplicate retries must be >= 0", retries_param)
 
-        self.individuals = [GPIndividual] * size
+        self.individuals = [None] * size
 
         # if self.loadInds:
         #     extra = state.parameters.getStringWithDefault(

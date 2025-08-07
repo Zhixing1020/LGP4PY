@@ -74,7 +74,7 @@ class LGPSwapPipeline(LGPMicroMutationPipeline):
         if j.getTreesLength() == 1:
             # swapping only works with individuals with more than one instruction
             if self.microMutation is not None:
-                j = self.microMutation.produce(subpopulation, j, state, thread)
+                j = self.microMutation.produce_individual(subpopulation, j, state, thread)
             return j
         
         for x in range(self.numTries):
@@ -105,6 +105,7 @@ class LGPSwapPipeline(LGPMicroMutationPipeline):
         if self.microMutation is not None:
             j = self.microMutation.produce_individual(subpopulation, j, state, thread)
         
+        j.breedingPipe = self
         return j
     
     def getLegalMutateIndex(self, ind, state, thread):

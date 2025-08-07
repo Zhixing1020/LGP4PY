@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from .breeding_source import BreedingSource
 from .gp_individual import GPIndividual
 from .evolution_state import EvolutionState
-from .population import Population
+# from .population import Population
 
 class SelectionMethod(BreedingSource, ABC):
     '''

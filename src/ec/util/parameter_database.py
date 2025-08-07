@@ -1,5 +1,5 @@
 
-
+from pathlib import Path
 from src.ec.util.parameter import Parameter
 
 class ParameterDatabase:
@@ -75,6 +75,56 @@ class ParameterDatabase:
 
         return param in self.params or default in self.params
     
+    def getFile(self, parameter:Parameter, defaultParameter:Parameter=None)->Path:
+        """
+        Gets a file from either the specified parameter or a default parameter.
+        Maintains the same behavior as the Java version.
+        """
+        # self.printGotten(parameter, defaultParameter, False)
+        if self.exists(parameter):
+            return self._getFile(parameter)
+        elif defaultParameter is not None:
+            return self._getFile(defaultParameter)
+        return None
+
+    def _getFile(self, parameter:Parameter)->Path:
+        """
+        Internal method to get a file from a single parameter.
+        Implements the same logic as the Java version:
+        - Handles paths starting with "$"
+        - Resolves absolute/relative paths
+        - Marks parameter as used
+        """
+        if not self.exists(parameter):
+            return None
+        
+        p = self.getString(parameter)
+        if p is None:
+            return None
+        
+        # Constants that would be defined at class level
+        C_HERE = "$"
+        C_CLASS = "@"
+        
+        if p.startswith(C_HERE):
+            return Path(p[len(C_HERE):])
+        elif p.startswith(C_CLASS):
+            return None  # Can't start with @
+        else:
+            path = Path(p)
+            if path.is_absolute():
+                return path
+            else:
+                # directoryFor would be a method that returns the base directory
+                base_dir = self.find_base_dir(path.parent, p) 
+                return (Path(base_dir) / p) if base_dir else None
+
+    def find_base_dir(start_path: Path, file_name: str) -> Path:
+        """Search upward for a directory containing the marker file"""
+        for parent in start_path.parents:
+            if (parent / file_name).exists():
+                return parent
+        return start_path  # Fallback to original directory
 
 if __name__ == "__main__":
     db = ParameterDatabase('D:\\zhixing\\科研\\LGP4PY\\LGP4PY\\tasks\\Symbreg\\parameters\\simpleLGP_SRMT.params')

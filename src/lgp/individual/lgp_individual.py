@@ -303,7 +303,7 @@ class LGPIndividual(GPIndividual):
     
     def printIndividualForHuman(self, state: 'EvolutionState')->str:
         res = self.EVALUATED_PREAMBLE + ("true" if self.evaluated else "false") + "\n"
-        res += str( self.fitness ) + "\n"
+        res += f"Fitness:\t[{ str( self.fitness )}]\n"
         res += self.printTrees(state)
         cnteff = self.countStatus()
         res += (f"# Effective instructions:\t{cnteff}\teffective %:\t{(cnteff / len(self.treelist)) * 100}\n")

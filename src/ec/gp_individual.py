@@ -85,7 +85,7 @@ class GPIndividual(ABC):
     def printIndividualForHuman(self, state:EvolutionState)->str:
         res = ""
         res += self.EVALUATED_PREAMBLE + ("true" if self.evaluated else "false") + "\n"
-        res += "Fitness: " + str(self.fitness) + "\n"
+        res += f"Fitness:\t[{ str( self.fitness )}]\n"
         
         res += self.printTrees() + "\n"
 

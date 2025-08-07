@@ -257,7 +257,7 @@ class GPSymbolicRegression(Problem, SupervisedProblem):
         # var = sum((r - avg) ** 2 for r in real) / len(real)
         # mse = self.getMSE(real, predict)
         # return mse / var if not math.isinf(mse) and not math.isnan(mse) else 1e6
-        res = self.getR2(real, predict)
+        res = 1. - self.getR2(real, predict)
         return 1e6 if math.isinf(res) or math.isnan(res) else res
 
     def getWRSE(self, real, predict, k):

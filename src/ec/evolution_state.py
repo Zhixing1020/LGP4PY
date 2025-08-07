@@ -134,7 +134,7 @@ class EvolutionState:
         self.evaluator:Evaluator = self.parameters.getInstanceForParameter(self.P_EVALUATOR, None, Evaluator)
         self.evaluator.setup(self, Parameter(self.P_EVALUATOR))
 
-        from src.ec.statistics import Statistics
+        from src.ec import Statistics
         self.statistics = self.parameters.getInstanceForParameter(self.P_STATISTICS, None, Statistics)
         self.statistics.setup(self, Parameter(self.P_STATISTICS))
 

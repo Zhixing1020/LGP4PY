@@ -5,6 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Run lgp.py without Debug",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/lgp.py",
+            "console": "integratedTerminal",
+            "args": [
+                "-file", 
+                "${workspaceFolder}/tasks/Symbreg/parameters/LGP_test.params",
+                "-p seed.0=7"
+            ],
+            "noDebug": true
+        },
+        {
             "name": "debug lgp.py",
             "type": "debugpy",
             "request": "launch",

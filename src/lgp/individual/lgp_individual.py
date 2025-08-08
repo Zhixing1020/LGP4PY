@@ -42,8 +42,9 @@ class LGPIndividual(GPIndividual):
         # self.rateFlowOperator = 0.0
         # self.maxIterTimes = 0
         self.outputRegister = []
-        self.fastFlag = 0
-        self.exec_trees = []
+        self.fastFlag = False
+        self.exec_trees:list[GPTreeStruct] = []
+        self.preevaluated = False
 
         # self.tmp_numOutputRegs = 0
         # self.float_numOutputRegs = False
@@ -190,14 +191,18 @@ class LGPIndividual(GPIndividual):
         self.resetRegisters(problem, 0.0)
 
         # check if the individual can be fast executed
-        if self.fastFlag != 1:
+        if not self.fastFlag:
             # normal execution and take consider the flow control
             # reset the flow controller
             # self.getFlowctrl().reset()
             pass
-
-        for tree in self.getTreelist():
-            if tree.status:
+        
+        if not self.preevaluated or not self.fastFlag:
+            for tree in self.getTreelist():
+                if tree.status:
+                    tree.child.eval(state, thread, input, individual, problem)
+        else:
+            for tree in self.exec_trees:
                 tree.child.eval(state, thread, input, individual, problem)
 
         if self.IsWrap() and with_warp:
@@ -218,6 +223,7 @@ class LGPIndividual(GPIndividual):
 
         # set the fastFlag to 1 if the individual is fast executable (i.e., no flow control)
         self.fastFlag = all(tree.type == GPTreeStruct.ARITHMETIC for tree in self.exec_trees)
+        self.preevaluated = True
 
     def getRegisters(self):
         return self.registers
@@ -258,7 +264,7 @@ class LGPIndividual(GPIndividual):
     def resetIndividual(self, numReg: int, maxIterTime: int, outReg: Optional[List[int]] = None):
         self.numRegs = numReg
         self.maxIterTimes = maxIterTime
-        self.evaluated = False
+        self.evaluated = self.preevaluated = False
 
         self.setRegisters([0.0 for _ in range(self.numRegs)])
 
@@ -383,7 +389,7 @@ class LGPIndividual(GPIndividual):
             # if isinstance(treeStr.child.children[0], FlowOperator):
             #     treeStr.type = GPTreeStruct.BRANCHING if isinstance(treeStr.child.children[0], Branching) else GPTreeStruct.ITERATION
             self.getTreelist().insert(index, treeStr)
-            self.evaluated = False
+            self.evaluated = self.preevaluated = False
             self.updateStatus()
             return True
         print(f"setTree index: {index} is out of range {len(self.getTreelist())}")
@@ -404,13 +410,13 @@ class LGPIndividual(GPIndividual):
             self.getTreelist().insert(index, treeStr)
         else:
             self.getTreelist().append(treeStr)
-        self.evaluated = False
+        self.evaluated = self.preevaluated = False
         self.updateStatus()
 
     def removeTree(self, index: int) -> bool:
         if index < len(self.getTreelist()):
             self.getTreelist().pop(index)
-            self.evaluated = False
+            self.evaluated = self.preevaluated = False
             self.updateStatus()
             return True
         print(f"removeTree index: {index} is out of range {len(self.getTreelist())}")
@@ -473,6 +479,7 @@ class LGPIndividual(GPIndividual):
             print("The n in updateStatus is larger than existing tree list")
             exit(1)
 
+        self.preevaluated = False
         statusArray = [False] * len(self.getTreelist())
         sourceArray = [[False] * self.getNumRegs() for _ in self.getTreelist()]
         destinationArray = [[False] * self.getNumRegs() for _ in self.getTreelist()]

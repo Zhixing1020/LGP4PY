@@ -8,7 +8,6 @@ from src.ec.gp_individual import GPIndividual
 from src.ec.breeding_source import BreedingSource
 from src.ec.selection_method import SelectionMethod
 
-import random
 
 class BreedingPipeline(BreedingSource):
     '''

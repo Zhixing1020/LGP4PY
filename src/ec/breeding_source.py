@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from src.ec import *
 from src.ec.util import *
-import random
 
 class BreedingSource(ABC):
     '''

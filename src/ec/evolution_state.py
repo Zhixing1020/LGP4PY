@@ -38,7 +38,7 @@ class EvolutionState:
 
         self.output = Output()
 
-        self.random : list[Random] = [Random] * 1
+        self.random : list[Random] = [None] * 1
 
         self.breedthreads:int = 0
         self.evalthreads:int = 1

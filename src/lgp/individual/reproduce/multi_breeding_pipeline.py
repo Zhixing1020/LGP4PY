@@ -1,7 +1,6 @@
 from src.ec import *
 from src.ec.util import *
 from typing import List
-import random
 
 class MultiBreedingPipeline(BreedingPipeline):
     '''Here, I directly implement the MultiBreedingPipeline in ECJ'''
@@ -25,7 +24,7 @@ class MultiBreedingPipeline(BreedingPipeline):
     
     def produce(self, min:int, max:int, start:int, subpopulation:int, inds:list[GPIndividual], 
                 state:EvolutionState, thread:int)->int:
-        op = random.choices(self.sources, weights=self.operatorRate, k=1)[0]
+        op = state.random[thread].choices(self.sources, weights=self.operatorRate, k=1)[0]
 
         total = op.produce(min,max,start,subpopulation,inds,state,thread)
 

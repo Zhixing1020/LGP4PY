@@ -5,7 +5,6 @@
 import os
 import math
 import numpy as np
-import random
 from typing import List
 
 from src.ec import *
@@ -306,6 +305,7 @@ class GPSymbolicRegression(Problem, SupervisedProblem):
 
             real = self.data_output
             predict = []
+            ind.preExecution(state, threadnum)
 
             for y in range(self.datanum):
                 tmp = GPData()

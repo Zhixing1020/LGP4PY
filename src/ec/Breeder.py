@@ -2,7 +2,6 @@
 from src.ec import *
 from src.ec.util import *
 from functools import cmp_to_key
-import random
 
 class Breeder:
     """

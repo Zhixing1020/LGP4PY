@@ -1,4 +1,4 @@
-import random
+
 from typing import List
 from src.lgp.individual import *
 from src.ec import *

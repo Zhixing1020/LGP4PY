@@ -5,10 +5,10 @@ from typing import override
 # from src.ec.gp_node import GPNode
 # from src.ec.gp_data import GPData
 
-class Mul(GPNode):
+class Min(GPNode):
     
     def __str__(self):
-        return "*"
+        return "min"
     
     @override
     def expectedChildren(self)->int:
@@ -23,12 +23,6 @@ class Mul(GPNode):
         result = child_result.value
 
         self.children[1].eval(state, thread, child_result, individual, problem)
-        child_result.value = result * child_result.value
-
-        # Clip the result to ±1e6
-        if child_result.value > 1e6:
-            child_result.value = 1e6
-        elif child_result.value < -1e6:
-            child_result.value = -1e6
+        child_result.value = min(result, child_result.value)
 
         # input.value = child_result.value

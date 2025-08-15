@@ -25,6 +25,7 @@ class LGPIndividual(GPIndividual):
     P_OUTPUTREGISTER = "output-register"
     # P_FLOATOUTPUT = "to-float-outputs"
     P_EFFECTIVE_INITIAL = "effective_initial"
+    INITIAL_VALUE = 0.0
 
     def __init__(self):
         super().__init__()
@@ -188,7 +189,7 @@ class LGPIndividual(GPIndividual):
             return  [ self.getRegistersIndex(r) for r in self.getOutputRegisters()] 
         
         # reset the registers
-        self.resetRegisters(problem, 0.0)
+        self.resetRegisters(problem, self.INITIAL_VALUE)
 
         # check if the individual can be fast executed
         if not self.fastFlag:

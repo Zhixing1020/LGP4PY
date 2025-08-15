@@ -17,7 +17,7 @@ class Sub(GPNode):
     @override
     def eval(self, state: EvolutionState, thread: int, input: GPData,
              individual, problem: Problem):
-        child_result = GPData()
+        child_result = input
         
         self.children[0].eval(state, thread, child_result, individual, problem)
         result = child_result.value
@@ -31,4 +31,4 @@ class Sub(GPNode):
         elif child_result.value < -1e6:
             child_result.value = -1e6
 
-        input.value = child_result.value
+        # input.value = child_result.value

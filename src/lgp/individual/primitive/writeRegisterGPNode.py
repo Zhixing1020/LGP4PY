@@ -40,8 +40,12 @@ class WriteRegisterGPNode(GPNode):
             state.output.fatal("number of registers must be >=1")
 
     def eval(self, state:EvolutionState, thread:int, input:GPData, individual, problem:Problem):
-        self.children[0].eval(state, thread, input, individual, problem)
-        individual.setRegister(self.index, input.value)
+        if not input.to_vectorize:
+            self.children[0].eval(state, thread, input, individual, problem)
+            individual.setRegister(self.index, input.value)
+        else:
+            self.children[0].eval(state, thread, input, individual, problem)
+            individual.setRegister(self.index, input.values)
     
     def __eq__(self, other):
         res = super().__eq__(other)

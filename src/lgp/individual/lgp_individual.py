@@ -3,7 +3,7 @@ from src.ec.util import *
 from src.ec.gp_individual import GPIndividual
     
 from abc import ABC, abstractmethod
-from typing import List, Optional, Set, override
+from typing import List, Optional, Set, override, Union
 
 from tasks.problem import Problem
 from src.lgp.individual.gp_tree_struct import GPTreeStruct
@@ -37,7 +37,7 @@ class LGPIndividual(GPIndividual):
         self.numRegs = 0
         self.numOutputRegs = 0
         self.eff_initialize = False
-        self.registers = []
+        self.registers = [] # each register can be a float or a numpy array
         self.wraplist = []
         # self.flowctrl = None
         # self.rateFlowOperator = 0.0
@@ -189,7 +189,10 @@ class LGPIndividual(GPIndividual):
             return  [ self.getRegistersIndex(r) for r in self.getOutputRegisters()] 
         
         # reset the registers
-        self.resetRegisters(problem, self.INITIAL_VALUE)
+        if not input.to_vectorize:
+            self.resetRegisters(problem, self.INITIAL_VALUE)
+        else:
+            self.resetRegisters(problem, np.full((len(input.values),1), self.INITIAL_VALUE))
 
         # check if the individual can be fast executed
         if not self.fastFlag:
@@ -226,10 +229,10 @@ class LGPIndividual(GPIndividual):
         self.fastFlag = all(tree.type == GPTreeStruct.ARITHMETIC for tree in self.exec_trees)
         self.preevaluated = True
 
-    def getRegisters(self):
+    def getRegisters(self)->Union [List[float], List[np.array]]:
         return self.registers
 
-    def getRegistersIndex(self, i: int) -> float:
+    def getRegistersIndex(self, i: int) -> Union[float, np.array]:
         return self.registers[i]
 
     def getOutputRegisters(self):
@@ -267,7 +270,7 @@ class LGPIndividual(GPIndividual):
         self.maxIterTimes = maxIterTime
         self.evaluated = self.preevaluated = False
 
-        self.setRegisters([0.0 for _ in range(self.numRegs)])
+        self.setRegisters([self.INITIAL_VALUE for _ in range(self.numRegs)])
 
         # self.flowctrl = LGPFlowController()
         # self.flowctrl.maxIterTimes = self.maxIterTimes
@@ -281,17 +284,23 @@ class LGPIndividual(GPIndividual):
         self.numOutputRegs = len(self.outputRegister)
         self.tmp_numOutputRegs = self.numOutputRegs
 
-    def setRegister(self, ind:int, value: float):
+    def setRegister(self, ind:int, value: Union[float, np.array]):
         self.registers[ind] = value
 
-    def setRegisters(self, registers: list[float]):
+    def setRegisters(self, registers: Union[list[float], list[np.array]]):
         if len(registers) != self.numRegs:
             print(f"We are assigning multiple registers with inconsistent number to the original register number\n")
             exit(1)
         self.registers = registers.copy()
 
-    def resetRegisters(self, problem: Problem, value:float=0.0):
-        self.setRegisters([value]*self.getNumRegs())
+    def resetRegisters(self, problem: Problem, value:Union[float, np.array]=0.0):
+        if isinstance(value, float):
+            self.setRegisters([value]*self.getNumRegs())
+        elif isinstance(value, np.ndarray):
+            regs = []
+            for _ in range(self.getNumRegs()):
+                regs.append(value.copy())
+            self.setRegisters(regs)
 
     def printTrees(self, state: EvolutionState=None)->str:
         x = 0

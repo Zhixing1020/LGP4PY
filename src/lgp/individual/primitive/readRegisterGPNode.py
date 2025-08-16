@@ -45,7 +45,10 @@ class ReadRegisterGPNode(GPNode):
         #     input.value = individual.getRegisters(self.index)
         # else:
         #     state.output.fatal("The individual might not have getRegisters() method\n")
-        input.value = individual.getRegistersIndex(self.index)
+        if not input.to_vectorize:
+            input.value = individual.getRegistersIndex(self.index)
+        else:
+            input.values = individual.getRegistersIndex(self.index)
 
     def __eq__(self, other):
         res = super().__eq__(other)

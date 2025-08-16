@@ -10,7 +10,7 @@ from src.ec.gp_data import GPData
 from src.ec.gp_node_parent import GPNodeParent
 
 from tasks.problem import Problem
-
+import numpy as np
 # import copy
 
 class GPNodeGather:

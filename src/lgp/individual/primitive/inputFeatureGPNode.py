@@ -1,7 +1,7 @@
 from src.ec import *
 from tasks.problem import Problem
 from typing import override
-
+import numpy as np
 # from src.ec.gp_node import GPNode
 
 class InputFeatureGPNode(GPNode):
@@ -40,11 +40,15 @@ class InputFeatureGPNode(GPNode):
             self.setRange(problem.datadim)
             self.index = state.random[thread].randint(0, self.range - 1)
 
-        if self.index < len(problem.X):
-            input.value = problem.X[self.index]
+        if not input.to_vectorize:
+            if self.index < len(problem.X):
+                input.value = problem.X[self.index]
+            else:
+                print("The input index exceeds the data dimension")
+                exit(1)
         else:
-            print("The input index exceeds the data dimension")
-            exit(1)
+            features = problem.X.reshape(-1, problem.datadim)
+            input.values = features[:, self.index]
 
     def __eq__(self, other):
         res = super().__eq__(other)

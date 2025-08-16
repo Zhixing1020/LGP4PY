@@ -1,6 +1,6 @@
 
 from src.ec.gp_node import GPNode
-
+import numpy as np
 class ConstantGPNode(GPNode):
     range = []  # shared across instances
 
@@ -33,7 +33,10 @@ class ConstantGPNode(GPNode):
         return 0
 
     def eval(self, state, thread, input, individual, problem):
-        input.value = self.value
+        if not input.to_vectorize:
+            input.value = self.value
+        else:
+            input.values = self.value
 
     # def __hash__(self):
     #     return hash(str(self))

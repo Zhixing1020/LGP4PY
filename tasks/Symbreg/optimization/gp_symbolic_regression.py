@@ -187,7 +187,7 @@ class GPSymbolicRegression(Problem, SupervisedProblem):
                 self.data_min[i] = min(self.data_min[i], instance[i])
             self.data.append(instance)
 
-        # self.data = np.array(self.data)
+        self.data = np.array(self.data, dtype=float)
 
     def read_y_file(self, filepath):
         with open(filepath, 'r') as f:
@@ -197,7 +197,7 @@ class GPSymbolicRegression(Problem, SupervisedProblem):
         self.outputnum, self.outputdim = int(header[0]), int(header[1])
         self.data_output = [list(map(float, line.strip().split())) for line in lines[1:self.outputnum+1]]
 
-        # self.data_output = np.array(self.data_output)
+        self.data_output = np.array(self.data_output, dtype=float)
 
     def split_validation(self, state:EvolutionState):
         self.validate_data = []
@@ -217,25 +217,35 @@ class GPSymbolicRegression(Problem, SupervisedProblem):
         self.outputnum = len(self.data_output)
 
     def normalizedataBasedTraining(self):
-        if not self.data:
+        if self.data is None or len(self.data) == 0:
             return
 
-        num = len(self.data)
-        dim = len(self.data[0])
-        self.norm_mean = [sum(col) / num for col in zip(*self.data)]
-        self.norm_std = [math.sqrt(sum((x - mean) ** 2 for x in col) / num)
-                         for col, mean in zip(zip(*self.data), self.norm_mean)]
+        # num = len(self.data)
+        # dim = len(self.data[0])
+        # self.norm_mean = [sum(col) / num for col in zip(*self.data)]
+        # self.norm_std = [math.sqrt(sum((x - mean) ** 2 for x in col) / num)
+        #                  for col, mean in zip(zip(*self.data), self.norm_mean)]
 
-        self.normdata = [
-            [(x - mean) / std if std > 0 else 0. for x, mean, std in zip(row, self.norm_mean, self.norm_std)]
-            for row in self.data
-        ]
+        # self.normdata = [
+        #     [(x - mean) / std if std > 0 else 0. for x, mean, std in zip(row, self.norm_mean, self.norm_std)]
+        #     for row in self.data
+        # ]
 
-        num_out = len(self.data_output)
-        dim_out = len(self.data_output[0])
-        self.out_mean = [sum(col) / num_out for col in zip(*self.data_output)]
-        self.out_std = [math.sqrt(sum((x - mean) ** 2 for x in col) / num_out)
-                        for col, mean in zip(zip(*self.data_output), self.out_mean)]
+        # num_out = len(self.data_output)
+        # dim_out = len(self.data_output[0])
+        # self.out_mean = [sum(col) / num_out for col in zip(*self.data_output)]
+        # self.out_std = [math.sqrt(sum((x - mean) ** 2 for x in col) / num_out)
+        #                 for col, mean in zip(zip(*self.data_output), self.out_mean)]
+        
+
+        self.norm_mean = self.data.mean(axis=0)             
+        self.norm_std = self.data.std(axis=0, ddof=0)      
+
+        safe_std = np.where(self.norm_std > 0, self.norm_std, 1.0)
+        self.normdata = ((self.data - self.norm_mean) / safe_std).tolist()
+
+        self.out_mean = self.data_output.mean(axis=0)
+        self.out_std = self.data_output.std(axis=0, ddof=0)
 
     def getRMSE(self, real, predict):
         # res = math.sqrt(sum((r - p) ** 2 for r, p in zip(real, predict)) / len(real))
@@ -300,7 +310,7 @@ class GPSymbolicRegression(Problem, SupervisedProblem):
 
     def evaluate(self, state:EvolutionState, ind:LGPIndividual4SR, subpopulation:int, threadnum:int):
         if not ind.evaluated:
-            if not self.data or not self.data_output:
+            if self.data is None or self.data_output is None:
                 raise RuntimeError("we have an empty data source")
 
             # hits = 0
@@ -319,6 +329,12 @@ class GPSymbolicRegression(Problem, SupervisedProblem):
                 ind.setDataIndex(y)
                 pred = ind.execute(state, threadnum, tmp, ind, self, False)
                 predict.append(pred)
+
+            tmp = GPData()
+            tmp.to_vectorize = True
+            tmp.values = np.zeros((self.datanum, 1))
+            self.X = self.normdata if self.normalized else self.data
+            predict = ind.execute(state, threadnum, tmp, ind, self, False)
 
             for y in range(self.datanum):
                 for od in range(self.target_num):
@@ -410,7 +426,7 @@ class GPSymbolicRegression(Problem, SupervisedProblem):
 
     def simpleevaluate(self, ind:LGPIndividual4SR):
         if not ind.evaluated:
-            if self.data == None or self.data_output == None:
+            if self.data is None or self.data_output is None:
                 raise RuntimeError("we have an empty data source")
 
             real = self.data_output

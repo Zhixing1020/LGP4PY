@@ -3,9 +3,12 @@ import sys
 import math
 import time
 import pandas as pd
-from src.ec.util import *
-from tasks.symbreg.optimization.gp_symbolic_regression import GPSymbolicRegression
 
+
+sys.path.append('D:/data/study/LGP4PY/LGP4PY')
+from tasks.symbreg.optimization.gp_symbolic_regression import GPSymbolicRegression
+from tasks.symbreg.ruleanalysis.result_file_reader4lgp_sr import TestResult4LGPSR
+from src.ec.util import *
 
 class RuleTest4LGPSRMT:
     maxgenerations = 5500
@@ -19,7 +22,7 @@ class RuleTest4LGPSRMT:
         self.numRegs = numReg
         self.maxIterations = maxIter
         self.isMultiObj = isMO
-        self.parameters = None
+        self.parameters:ParameterDatabase = None
 
     def addParamsfile(self, parameters):
         self.parameters = parameters
@@ -50,7 +53,7 @@ class RuleTest4LGPSRMT:
 
         csv_path = os.path.join(targetPath, f"{self.dataName}.csv")
 
-        testResults = []
+        testResults:list[TestResult4LGPSR] = []
         allTestFitness = [[0] * self.numRuns for _ in range(self.maxgenerations)]
 
         numOutRegs = self.parameters.getInt(
@@ -67,7 +70,7 @@ class RuleTest4LGPSRMT:
                 problem.setFoldIndex(i % problem.getFoldNum(), False)
 
             # Placeholder: This function should parse the result from file
-            result = TestResult4CpxGPSRMT.readFromFile4LGP(
+            result:TestResult4LGPSR = TestResult4LGPSR.readFromFile4LGP(
                 sourceFile, self.numRegs, self.maxIterations, self.isMultiObj, outputRegs
             )
 
@@ -79,15 +82,16 @@ class RuleTest4LGPSRMT:
                     or j == len(result.getGenerationalRules()) - 1
                 ):
                     problem.simpleevaluate(result.getGenerationalRule(j))
-                    fitnesses = [
-                        result.getGenerationalRule(j).fitness.fitness()
-                        for _ in self.objectives
-                    ]
-                    result.getGenerationalTestFitness(j).setObjectives(None, fitnesses)
+                    # fitnesses = [
+                    #     result.getGenerationalRule(j).fitness.fitness()
+                    #     for _ in self.objectives
+                    # ]
+                    fitnesses = result.getGenerationalRule(j).fitness.fitness()
+                    result.getGenerationalTestFitness(j).setFitness(None, fitnesses)
                 else:
                     prev_fit = result.getGenerationalTestFitness(j - 1).fitness()
-                    fitnesses = [prev_fit for _ in self.objectives]
-                    result.getGenerationalTestFitness(j).setObjectives(None, fitnesses)
+                    # fitnesses = [prev_fit for _ in self.objectives]
+                    result.getGenerationalTestFitness(j).setFitness(None, prev_fit)
 
                 print(
                     f"Generation {j}: test fitness = {result.getGenerationalTestFitness(j).fitness()}"
@@ -129,13 +133,14 @@ class RuleTest4LGPSRMT:
                         ]
                     )
                 else:
-                    base = [i, j, rule.getTreesLength(), numUniqueTerminals]
-                    for k in range(len(self.objectives)):
-                        base.extend(
-                            [k, trainFit.getObjective(k), testFit.getObjective(k)]
-                        )
-                    base.append(0)
-                    rows.append(base)
+                    # base = [i, j, rule.getTreesLength(), numUniqueTerminals]
+                    # for k in range(len(self.objectives)):
+                    #     base.extend(
+                    #         [k, trainFit.getObjective(k), testFit.getObjective(k)]
+                    #     )
+                    # base.append(0)
+                    # rows.append(base)
+                    raise ValueError("we do not support multi-objective yet in ruletest4LGP.py")
 
         df = pd.DataFrame(rows)
         df.to_csv(csv_path, index=False)
@@ -150,3 +155,38 @@ class RuleTest4LGPSRMT:
         df_fitness.to_csv(all_test_path, index=False)
 
         print(f"Results written to:\n{csv_path}\n{all_test_path}")
+
+
+if __name__ == "__main__":
+    idx = 1  # skip script name
+
+    trainPath = sys.argv[idx]; idx += 1
+    dataPath = sys.argv[idx]; idx += 1
+    testSetName = sys.argv[idx]; idx += 1
+    numRuns = int(sys.argv[idx]); idx += 1
+
+    numRegs = int(sys.argv[idx]); idx += 1
+    maxIteration = int(sys.argv[idx]); idx += 1
+    numObjectives = int(sys.argv[idx]); idx += 1
+
+    if numObjectives > 1:
+        sys.stderr.write("the basic rule analysis in LGP for SR does not support multi-objective\n")
+        sys.exit(1)
+
+    ruleTest = RuleTest4LGPSRMT(trainPath, dataPath, testSetName, numRuns, numRegs, maxIteration, numObjectives > 1)
+
+    for i in range(numObjectives):
+        ruleTest.addObjective(sys.argv[idx]); idx += 1
+
+    # algorithm-related parameters (placeholder for ParameterDatabase)
+    try:
+        params_path = os.path.abspath(sys.argv[idx])
+        parameters = ParameterDatabase(params_path)
+        # parameters = {"params_file": params_path, "args": sys.argv}
+    except Exception as e:
+        print(f"An exception was generated upon reading the parameter file \"{sys.argv[idx]}\".\nHere it is:\n{e}")
+        sys.exit(1)
+    idx += 1
+    ruleTest.addParamsfile(parameters)
+
+    ruleTest.writeToCSV()

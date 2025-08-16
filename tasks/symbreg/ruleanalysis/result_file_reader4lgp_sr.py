@@ -1,7 +1,9 @@
 import pandas as pd
 from pathlib import Path
-from tasks.symbreg.ruleanalysis.test_result4lgp_sr import TestResult4LGPSRMT
-
+from tasks.symbreg.ruleanalysis.test_result4lgp_sr import TestResult4LGPSR
+from tasks.symbreg.individual.lgpindividual4SR import LGPIndividual4SR
+from tasks.symbreg.util.lisp_parser4sr import LispParser4SR
+from src.ec import *
 # Assuming the following classes exist elsewhere in your project:
 # from your_module import TestResult4CpxGPSRMT, LGPIndividual4SRMT, Fitness, KozaFitness, MultiObjectiveFitness, GPTree, LispParser4SRMT
 
@@ -9,7 +11,7 @@ class ResultFileReader4LGPSR:
 
     @staticmethod
     def readTestResultFromFile(file, numRegs, maxIterations, isMultiObjective, outputRegs):
-        result = TestResult4LGPSRMT()
+        result = TestResult4LGPSR()
         rule = None
         fitness = None
         tree = None
@@ -24,7 +26,7 @@ class ResultFileReader4LGPSR:
                         break
 
                     if line.startswith("Generation"):
-                        rule = LGPIndividual4SRMT()
+                        rule = LGPIndividual4SR()
                         if outputRegs is None:
                             rule.resetIndividual(numRegs, maxIterations)
                         else:
@@ -51,7 +53,7 @@ class ResultFileReader4LGPSR:
                                 expression = expression[nextWhiteSpaceIdx + 1:].strip()
 
                             # parse expression
-                            tree = LispParser4SRMT.parseSymRegRule(expression)
+                            tree = LispParser4SR.parseSymRegRule(expression)
                             rule.addTree(rule.getTreesLength(), tree)
 
                             expression = next(br).strip()
@@ -71,20 +73,21 @@ class ResultFileReader4LGPSR:
         return result
 
     @staticmethod
-    def readFitnessFromLine(line, isMultiobjective):
+    def readFitnessFromLine(line, isMultiobjective)->Fitness:
         if isMultiobjective:
-            spaceSegments = line.split()
-            equation = spaceSegments[1].split("=")
-            fitness = float(equation[1])
-            f = KozaFitness()
-            f.setStandardizedFitness(None, fitness)
-            return f
+            # spaceSegments = line.split()
+            # equation = spaceSegments[1].split("=")
+            # fitness = float(equation[1])
+            # f = Fitness()
+            # f.setFitness(None, fitness)
+            # return f
+            raise ValueError("we do not support multi-objective fitness yet")
         else:
             spaceSegments = line.split()
             fitVec = spaceSegments[1].split("[")[1].split("]")[0]
             fitness = float(fitVec)
-            f = MultiObjectiveFitness()
-            f.objectives = [fitness]
+            f = Fitness()
+            f.setFitness(None, fitness)
             return f
 
     @staticmethod
@@ -92,7 +95,7 @@ class ResultFileReader4LGPSR:
         expressions = []
         rule = None
         ruleString = ""
-        fitness = None
+        fitness:Fitness = None
         tree = None
 
         file_path = Path(file)
@@ -105,7 +108,7 @@ class ResultFileReader4LGPSR:
                         break
 
                     if line.startswith("Generation"):
-                        rule = LGPIndividual4SRMT()
+                        rule = LGPIndividual4SR()
                         if outputRegs is None:
                             rule.resetIndividual(numRegs, maxIterations)
                         else:
@@ -134,7 +137,7 @@ class ResultFileReader4LGPSR:
                             if nextWhiteSpaceIdx != -1:
                                 expression = expression[nextWhiteSpaceIdx + 1:].strip()
 
-                            tree = LispParser4SRMT.parseSymRegRule(expression)
+                            tree = LispParser4SR.parseSymRegRule(expression)
                             rule.addTree(rule.getTreesLength(), tree)
 
                             expression = next(br).strip()

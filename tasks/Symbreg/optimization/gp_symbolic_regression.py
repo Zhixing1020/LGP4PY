@@ -11,7 +11,7 @@ from src.ec import *
 from src.ec.util import Parameter,ParameterDatabase
 from tasks.problem import Problem
 from tasks.supervisedproblem import SupervisedProblem
-from tasks.Symbreg.individual.lgpindividual4SR import LGPIndividual4SR
+from tasks.symbreg.individual.lgpindividual4SR import LGPIndividual4SR
 
 from sklearn.metrics import mean_squared_error, root_mean_squared_error, r2_score
 
@@ -187,6 +187,8 @@ class GPSymbolicRegression(Problem, SupervisedProblem):
                 self.data_min[i] = min(self.data_min[i], instance[i])
             self.data.append(instance)
 
+        # self.data = np.array(self.data)
+
     def read_y_file(self, filepath):
         with open(filepath, 'r') as f:
             lines = f.readlines()
@@ -194,6 +196,8 @@ class GPSymbolicRegression(Problem, SupervisedProblem):
         header = lines[0].strip().split()
         self.outputnum, self.outputdim = int(header[0]), int(header[1])
         self.data_output = [list(map(float, line.strip().split())) for line in lines[1:self.outputnum+1]]
+
+        # self.data_output = np.array(self.data_output)
 
     def split_validation(self, state:EvolutionState):
         self.validate_data = []
@@ -406,7 +410,7 @@ class GPSymbolicRegression(Problem, SupervisedProblem):
 
     def simpleevaluate(self, ind:LGPIndividual4SR):
         if not ind.evaluated:
-            if not self.data or not self.data_output:
+            if self.data == None or self.data_output == None:
                 raise RuntimeError("we have an empty data source")
 
             real = self.data_output

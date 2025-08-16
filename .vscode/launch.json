@@ -31,6 +31,49 @@
                 "${workspaceFolder}/tasks/Symbreg/parameters/LGP_test.params",
                 "-p seed.0=7"
             ]
+        },
+
+        {
+            "name": "Run ruletest for lgp.py without Debug",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tasks/symbreg/ruleanalysis/ruletest4lgp_sr.py",
+            "console": "integratedTerminal",
+            "args": [
+                "${workspaceFolder}/",
+                "${workspaceFolder}/dataset/",
+                "Nguyen4",
+                "1",
+                "100",
+                "100",
+                "1",
+                "RSE",
+                "${workspaceFolder}/tasks/Symbreg/parameters/LGP_test.params",
+                "-p eval.problem.Kfold_index=0"
+            ],
+            "noDebug": true,
+            "env": {
+                "PYTHONOPTIMIZE": "1"
+            }
+        },
+        {
+            "name": "debug ruletest for lgp.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/tasks/symbreg/ruleanalysis/ruletest4lgp_sr.py",
+            "console": "integratedTerminal",
+            "args": [
+                "${workspaceFolder}/",
+                "${workspaceFolder}/dataset/",
+                "Nguyen4",
+                "1",
+                "100",
+                "100",
+                "1",
+                "RSE",
+                "${workspaceFolder}/tasks/Symbreg/parameters/LGP_test.params",
+                "-p eval.problem.Kfold_index=0"
+            ]
         }
     ]
 }

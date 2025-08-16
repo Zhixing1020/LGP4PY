@@ -4,7 +4,7 @@ from src.ec.util import *
 from src.ec import Fitness
 from tasks.symbreg.individual.lgpindividual4SR import LGPIndividual4SR
 
-class TestResult4LGPSRMT:
+class TestResult4LGPSR:
     validationSimSeed = 483561
 
     def __init__(self):
@@ -106,7 +106,7 @@ class TestResult4LGPSRMT:
 
     # ----- File Readers -----
     @staticmethod
-    def readFromFile4LGP(file_path: str, numRegs: int, maxIterations: int, isMultiObj: bool, outputRegs: List[int]) -> 'TestResult4LGPSRMT':
+    def readFromFile4LGP(file_path: str, numRegs: int, maxIterations: int, isMultiObj: bool, outputRegs: List[int]) -> 'TestResult4LGPSR':
         from .result_file_reader4lgp_sr import ResultFileReader4LGPSR
         return ResultFileReader4LGPSR.readTestResultFromFile(file_path, numRegs, maxIterations, isMultiObj, outputRegs)
 
